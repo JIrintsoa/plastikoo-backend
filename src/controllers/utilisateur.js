@@ -115,8 +115,18 @@ const creeCodePIN = (req,res) =>{
 const creePseudo = (req,res) => {
     try {
         pseudoSchemas.parse(req.body)
-        const {pseudo} = req.body
-        console.log('helloo world')
+        const {pseudo, id_utilisateur} = req.body
+        const sql = `UPDATE utilisateur SET pseudo_utilisateur = ? where id = ?`
+        mysqlPool.query(sql,[pseudo, id_utilisateur],(err,result)=>{
+            if (err) {
+                console.error('Erreur d\'ajout pseudo de l\'utilisateur: ', err);
+                res.json({error:err.sqlMessage})
+            } else {
+                console.log('ajout de pseudo success', result);
+                res.json({message: 'Votre pseudo a bien été ajouté'});
+            }
+        })
+        // console.log('helloo world')
     } catch (error) {
         if (error instanceof ZodError) {
             // Map the validation errors to the corresponding fields

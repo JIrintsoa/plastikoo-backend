@@ -9,11 +9,16 @@ import UtilisateurRoutes from "./routes/utilisateur.js"
 import BonAchatRoutes from "./routes/bonAchat.js";
 import PublicationRoutes from "./routes/forum/publication.js"
 import UploadFileRoutes from "./routes/upload.js"
+import SwaggerDocs from "./utils/Swagger.docs.js";
+import SwaggerUi from "swagger-ui-express";
 
 const app = express()
 
 app.use(express.json());
 app.use(bodyParser.json())
+
+// documentation about the backend
+app.use('/api-docs',SwaggerUi.serve, SwaggerUi.setup(SwaggerDocs.swaggerSpec))
 
 // middlewares
 app.use('/contact', ContactRoutes);

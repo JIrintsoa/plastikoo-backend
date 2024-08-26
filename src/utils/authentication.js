@@ -22,24 +22,6 @@ const signUpSchema = z.object({
     })
 });
 
-// const signUpSchema = z.object({
-//     email: z.string().min(1, "L'email est requis").email({message:"L'email est invalide"}),
-//     mdp: z.string().min(1, `Le mot de passe est requis`),
-//     nom: z.string().min(1, "Votre nom est requis"),
-//     prenom: z.string().min(1, "Votre prenom est requis"),
-//     date_naissance: z.string().refine((dateStr) => !isNaN(Date.parse(dateStr)), {
-//         message: "Format de date invalide. Utilisez le format YYYY-MM-DD.",
-//     })
-//     .transform((dateStr) => new Date(dateStr))
-//     .refine((date) => {
-//         const minAge = 18;
-//         const today = new Date();
-//         const minBirthDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
-//         return date <= minBirthDate; // Ensure the birthdate is at least 18 years ago
-//     }, {
-//         message: "Vous devez avoir au moins 18 ans.",
-//     })
-// });
 
 const signInSchema = z.object({
     username: z.string().min(1, "Le nom d'utilisateur est requis").max(50, "Le nom d'utilisateur est trop long"),

@@ -1,6 +1,7 @@
 import { z,ZodError } from "zod"
 import mysqlPool from "../config/database.js"
 
+
 const PINSchemas = z.object({
     id_utilisateur: z.number().int().positive({message:"l'id_utilisateur doit etre positive"}),
     code_pin: z.string()
@@ -12,6 +13,13 @@ const PINSchemas = z.object({
 const verifieSoldeSchemas = z.object({
     id_utilisateur : z.number().int().positive({message:"id_utilisateur doit etre superieur à 0"}),
     montant: z.number().int().multipleOf(0.01).positive({message:"Solde doit etre superieur à 0"}),
+})
+
+const pseudoSchemas = z.object({
+    pseudo: z.string()
+    .min(3, "Le pseudo doit comporter au moins 3 caractères.")
+    .max(20, "Le pseudo ne peut pas dépasser 20 caractères.")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]+$/, "Le pseudo doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un underscore.")
 })
 
 const verifierSolde = ({id_user, somme},res) => {
@@ -104,8 +112,30 @@ const creeCodePIN = (req,res) =>{
     }
 }
 
+const creePseudo = (req,res) => {
+    try {
+        pseudoSchemas.parse(req.body)
+        const {pseudo} = req.body
+        console.log('helloo world')
+    } catch (error) {
+        if (error instanceof ZodError) {
+            // Map the validation errors to the corresponding fields
+            const validationErrors = error.errors.reduce((acc, err) => {
+                acc[err.path[0]] = err.message;
+                return acc;
+            }, {});
+            // Return the validation errors in the desired format
+            res.status(400).json({ error: validationErrors });
+        } else {
+            console.error(error); // Log the unexpected error for debugging
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+}
+
 export default {
     creeCodePIN,
     verifierCodePIN,
-    verifierSolde
+    verifierSolde,
+    creePseudo
 }

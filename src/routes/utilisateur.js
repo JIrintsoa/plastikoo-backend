@@ -5,7 +5,7 @@ import AuthenticationController from "../utils/authentication.js";
 const {validateLogin} = AuthenticationController
 const route =  Router()
 
-route.post('/cree-code-pin',async (req,res)=>{
+route.post('/cree-code-pin',async (req,res) => {
     await UtilisateurController.creeCodePIN(req,res)
     // console.log('cree code pin')
 })
@@ -26,6 +26,7 @@ route.post('/connecter', AuthenticationController.login)
 
 route.post('/inscription',AuthenticationController.sInscrire)
 
-route.post('/pseudo', UtilisateurController.creePseudo)
+route.put('/cree-pseudo', UtilisateurController.creePseudo)
+// route.update('/pseudo', UtilisateurController.creePseudo)
 
 export default route;

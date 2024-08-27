@@ -9,11 +9,19 @@ const bonAchatSchema = z.object({
     duree_exp: z.number().int().positive({message: "duree d'expiration doit etre superieur à 0"})
 })
 
-const userService = z.object({
-    id_utilisateur: z.number().int().positive({message:"id_utilisateur doit etre superieur a 0"}),
-    id_service: z.number().int().positive({message: "id_service doit etre superieur à 0"})
-})
+// const userService = z.object({
+//     id_utilisateur: z.number().int().positive({message:"id_utilisateur doit etre superieur a 0"}),
+//     id_service: z.number().int().positive({message: "id_service doit etre superieur à 0"})
+// })
 
+const userService = z.object({
+    id_utilisateur: z.string().transform((val) => parseInt(val, 10)).pipe(
+        z.number().int().positive({ message: "id_utilisateur doit être supérieur à 0" })
+    ),
+    id_service: z.string().transform((val) => parseInt(val, 10)).pipe(
+        z.number().int().positive({ message: "id_service doit être supérieur à 0" })
+    )
+});
 
 const creer = (req, res) => {
     try {
@@ -52,8 +60,8 @@ const creer = (req, res) => {
 
 const details = (req,res) =>{
     const form = userService.parse({
-        id_utilisateur: req.body.id_utilisateur,
-        id_service: req.body.id_service
+        id_utilisateur: req.params.id_utilisateur,
+        id_service: req.params.id_service
     })
     const sql = `select
         u.id as id_utilisateur,
@@ -78,7 +86,9 @@ const details = (req,res) =>{
 }
 
 const liste = (req,res)=> {
-    const id_utilisateur = req.body.id_utilisateur
+    const {
+        id_utilisateur
+    } = req.params
     const sql = `SELECT
                 ba.code_barre,
                 t.montant,

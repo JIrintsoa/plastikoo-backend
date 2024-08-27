@@ -9,7 +9,7 @@ router.get('/:id_utilisateur', transactionController.historique)
 
 router.post('/recolte', transactionController.recolte)
 
-router.get('/retrait/:id_user/:id_serv',transactionController.infosRetrait)
+router.get('/retrait/:id_utilisateur/:id_serv',transactionController.infosRetrait)
 
 router.post('/retrait', transactionController.retrait)
 

@@ -118,6 +118,9 @@ const infosRetrait = (req,res) =>{
         u.id = ?
     LIMIT 1`
     mysqlPool.query(sql,[id_serv,id_user],(err,result)=>{
+        if(result.length == 0){
+            res.json({error:"Aucun donnée trouvé"})
+        }
         if (err) {
             console.error('Erreur liste de donnee:', err);
             res.json({error:err.sqlMessage})
@@ -199,6 +202,7 @@ const historique = (req,res)=>{
             where t.id_utilisateur = ?
             ORDER BY t.date_transaction DESC
             LIMIT 5`
+    // console.log(sql)
     mysqlPool.query(sql,[id_utilisateur],(err,result)=>{
         if (err) {
             console.error('Erreur data fecthed:\n', err);

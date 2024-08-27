@@ -6,11 +6,11 @@ const route = Router()
 // creer un bon achat
 route.post('', BonAchat.creer)
 
-route.get('',async (req,res)=>{
+route.get('/:id_utilisateur',async (req,res)=>{
     await BonAchat.liste(req,res)
 })
 
-route.post('/details', async (req,res)=>{
+route.get('/details/:id_utilisateur/:id_service', async (req,res)=>{
     await BonAchat.details(req, res)
 })
 

@@ -16,12 +16,6 @@ const transactionSchema = z.object({
     date_transaction: z.date()
 })
 
-// const retraitSchema = z.object({
-//     montant: z.number().positive({message: "Le montant devrait etre superieur a 0"}).default(0),
-//     numero_beneficiaire:  z.string({message:"Vous devez ajouter un numero beneficiaire"})
-//     .trim().refine(phoneNumberPattern.validateMalagasyPhoneNumber,{message:"Format de numéro de téléphone invalide. Doit être au format: \n +261XXXXXXXXX (tous les chiffres) \n +261 XX XX XXX XX (avec espaces) \n 03[2348]XXXXXXXXX (tous chiffres) \n 03[2348] XX XXX XX (avec espaces)\n"}),
-//     id_utilisateur: z.number().nonnegative(),
-// })
 
 const retraitSchema = z.object({
     montant: z.number().positive({message: "Le montant devrait etre superieur a 0"}).default(0),
@@ -34,25 +28,11 @@ const retraitSchema = z.object({
     id_service: z.number().positive({message: "id_service doit etre positif"})
 })
 
-// const recolteSchema = z.object({
-//     montant_entrant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
-//     id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-//     id_details_service: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-//     id_machine_recolte: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-//     reference_ticket: z.string().min(1, {message:"Ajouter la reference du ticket "})
-// })
-
 const recolteSchema = z.object({
     montant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
     id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
     code_recolte: z.string().min(1,{message:"le code doit contenir 6 chiffres"}),
     id_machine_recolte: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-})
-
-const inputBA = z.object({
-    montant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
-    id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-    id_details_service: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
 })
 
 const retrait = (req,res) => {
@@ -166,10 +146,10 @@ async function recolte(req, res) {
     }
 }
 
-const historique = (req,res)=>{
+const historique = (req,res) => {
     const {
         id_utilisateur
-    } = req.params
+    } = req.utilisateur
     const sql = `select
             t.id as id_transaction,
             t.reference,
@@ -204,11 +184,14 @@ const historique = (req,res)=>{
             LIMIT 5`
     // console.log(sql)
     mysqlPool.query(sql,[id_utilisateur],(err,result)=>{
+        if(result.length == 0){
+            res.json({message:"Aucun historique transaction"})
+        }
         if (err) {
             console.error('Erreur data fecthed:\n', err);
             res.json({error:err.sqlMessage})
         } else {
-            console.log(sql)
+            // console.log(sql)
             console.log('Data fetched successfully:', result);
             res.json(result);
         }

@@ -29,4 +29,6 @@ route.post('/inscription',AuthenticationController.sInscrire)
 route.put('/cree-pseudo', UtilisateurController.creePseudo)
 // route.update('/pseudo', UtilisateurController.creePseudo)
 
+route.get('',UtilisateurController.liste)
+
 export default route;

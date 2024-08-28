@@ -9,6 +9,7 @@ import UtilisateurRoutes from "./routes/utilisateur.js"
 import BonAchatRoutes from "./routes/bonAchat.js";
 import PublicationRoutes from "./routes/forum/publication.js"
 import UploadFileRoutes from "./routes/upload.js"
+import AuthenticationController from "./utils/authentication.js";
 
 const app = express()
 
@@ -35,6 +36,9 @@ app.use('/forum/publication', PublicationRoutes)
 
 app.use('/upload',UploadFileRoutes)
 
+// app.use('/protected-route', AuthenticationController.verifyRoleToken('administrateur'), (req, res) => {
+//     res.send(req.utilisateur);
+// });
 
 app.listen(5000, () => {
     console.log(`App running on http://localhost:5000`)

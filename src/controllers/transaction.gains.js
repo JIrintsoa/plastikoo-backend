@@ -16,12 +16,6 @@ const transactionSchema = z.object({
     date_transaction: z.date()
 })
 
-// const retraitSchema = z.object({
-//     montant: z.number().positive({message: "Le montant devrait etre superieur a 0"}).default(0),
-//     numero_beneficiaire:  z.string({message:"Vous devez ajouter un numero beneficiaire"})
-//     .trim().refine(phoneNumberPattern.validateMalagasyPhoneNumber,{message:"Format de numéro de téléphone invalide. Doit être au format: \n +261XXXXXXXXX (tous les chiffres) \n +261 XX XX XXX XX (avec espaces) \n 03[2348]XXXXXXXXX (tous chiffres) \n 03[2348] XX XXX XX (avec espaces)\n"}),
-//     id_utilisateur: z.number().nonnegative(),
-// })
 
 const retraitSchema = z.object({
     montant: z.number().positive({message: "Le montant devrait etre superieur a 0"}).default(0),
@@ -34,14 +28,6 @@ const retraitSchema = z.object({
     id_service: z.number().positive({message: "id_service doit etre positif"})
 })
 
-// const recolteSchema = z.object({
-//     montant_entrant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
-//     id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-//     id_details_service: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-//     id_machine_recolte: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-//     reference_ticket: z.string().min(1, {message:"Ajouter la reference du ticket "})
-// })
-
 const recolteSchema = z.object({
     montant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
     id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
@@ -49,17 +35,11 @@ const recolteSchema = z.object({
     id_machine_recolte: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
 })
 
-const inputBA = z.object({
-    montant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
-    id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-    id_details_service: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
-})
-
 const retrait = (req,res) => {
     try {
         const form = retraitSchema.parse({
             montant: req.body.montant,
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             id_service: req.body.id_service,
             numero_beneficiaire: req.body.numero_beneficiaire,
             numero_expediteur: req.body.numero_expediteur,
@@ -96,9 +76,9 @@ const retrait = (req,res) => {
 }
 
 const infosRetrait = (req,res) =>{
+    const id_user = req.utilisateur.id_utilisateur
     const {
-        id_user,
-        id_serv
+        id_service
     } = req.params
 
     const sql = `SELECT
@@ -117,7 +97,7 @@ const infosRetrait = (req,res) =>{
     WHERE
         u.id = ?
     LIMIT 1`
-    mysqlPool.query(sql,[id_serv,id_user],(err,result)=>{
+    mysqlPool.query(sql,[id_service,id_user],(err,result)=>{
         if(result.length == 0){
             res.json({error:"Aucun donnée trouvé"})
         }
@@ -133,9 +113,10 @@ const infosRetrait = (req,res) =>{
 
 async function recolte(req, res) {
     try {
+        // const {id_utilisateur} = req.utilisateur
         const form = recolteSchema.parse({
             montant: req.body.montant,
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             id_machine_recolte: req.body.id_machine_recolte,
             code_recolte:req.body.code_recolte
         })
@@ -166,10 +147,11 @@ async function recolte(req, res) {
     }
 }
 
-const historique = (req,res)=>{
+const historique = (req,res) => {
     const {
         id_utilisateur
-    } = req.params
+    } = req.utilisateur
+
     const sql = `select
             t.id as id_transaction,
             t.reference,
@@ -207,8 +189,12 @@ const historique = (req,res)=>{
         if (err) {
             console.error('Erreur data fecthed:\n', err);
             res.json({error:err.sqlMessage})
-        } else {
-            console.log(sql)
+        } 
+        else if(result.length == 0){
+            res.json({message:"Aucun historique transaction"})
+        }
+        else {
+            // console.log(sql)
             console.log('Data fetched successfully:', result);
             res.json(result);
         }

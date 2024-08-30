@@ -10,6 +10,10 @@ import BonAchatRoutes from "./routes/bonAchat.js";
 import PublicationRoutes from "./routes/forum/publication.js"
 import UploadFileRoutes from "./routes/upload.js"
 
+// Import routes with JWT
+import TransactionRoutesJWT from './routes/withJWT/transactions.js'
+import AuthenticationController from "./utils/authentication.js";
+
 const app = express()
 
 app.use(express.json());
@@ -35,6 +39,10 @@ app.use('/forum/publication', PublicationRoutes)
 
 app.use('/upload',UploadFileRoutes)
 
+// API with JWT token
+app.use('/jwt/transaction', TransactionRoutesJWT)
+
+app.use('/utilisateur', UtilisateurRoutes)
 
 app.listen(5000, () => {
     console.log(`App running on http://localhost:5000`)

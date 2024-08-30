@@ -66,7 +66,18 @@ const publier = async(req,res) => {
     // console.log('hello world')
 }
 
+const bannir = async (req,res) => {
+    try {
+        const {id_utilisateur} = req.params
+        // const sql = ``
+        console.log('bannisseo')
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 export default {
     liste,
-    publier
+    publier,
+    bannir
 }

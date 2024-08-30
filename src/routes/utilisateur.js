@@ -2,7 +2,6 @@ import { Router } from "express";
 import UtilisateurController from "../controllers/utilisateur.js";
 import AuthenticationController from "../utils/authentication.js";
 
-const {validateLogin} = AuthenticationController
 const route =  Router()
 
 route.post('/cree-code-pin',async (req,res) => {
@@ -28,5 +27,7 @@ route.post('/inscription',AuthenticationController.sInscrire)
 
 route.put('/cree-pseudo', UtilisateurController.creePseudo)
 // route.update('/pseudo', UtilisateurController.creePseudo)
+
+route.get('',UtilisateurController.liste)
 
 export default route;

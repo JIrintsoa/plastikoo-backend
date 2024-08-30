@@ -1,6 +1,7 @@
 import { z,ZodError } from "zod"
 import mysqlPool from "../config/database.js"
 
+import 'dotenv/config'
 
 const PINSchemas = z.object({
     id_utilisateur: z.number().int().positive({message:"l'id_utilisateur doit etre positive"}),
@@ -48,7 +49,7 @@ const verifierCodePIN = (req,res) => {
 
     try {
         const form = PINSchemas.parse({
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             code_pin: req.body.code_pin
         })
         const {
@@ -57,7 +58,8 @@ const verifierCodePIN = (req,res) => {
         } = form
 
         // const sql = `select id from utilisateur where id = ? and code_pin = ?`;
-        const sql = `CALL verifier_code_pin(?,?,3,1)`
+        const sql = `CALL verifier_code_pin(?,?,${process.env.CP_TENTE_MAX},${process.env.CP_TENTE_DELAIS})`
+        console.log(sql)
         mysqlPool.query(sql,[id_utilisateur,code_pin],(err,result) => {
             if (err) {
                 console.error('Erreur fetch de l\'utilisateur:: ', err);
@@ -82,7 +84,7 @@ const verifierCodePIN = (req,res) => {
 const creeCodePIN = (req,res) =>{
     try {
         const form = PINSchemas.parse({
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             code_pin: req.body.code_pin
         })
         const {
@@ -115,7 +117,8 @@ const creeCodePIN = (req,res) =>{
 const creePseudo = (req,res) => {
     try {
         pseudoSchemas.parse(req.body)
-        const {pseudo, id_utilisateur} = req.body
+        const id_utilisateur = req.utilisateur.id_utilisateur
+        const {pseudo} = req.body
         const sql = `UPDATE utilisateur SET pseudo_utilisateur = ? where id = ?`
         mysqlPool.query(sql,[pseudo, id_utilisateur],(err,result)=>{
             if (err) {
@@ -143,9 +146,23 @@ const creePseudo = (req,res) => {
     }
 }
 
+const liste = (req,res) =>{
+    const sql = ` SELECT * FROM utilisateur`
+    mysqlPool.query(sql,(err,result)=>{
+        if (err) {
+            console.error('Erreur de fetch des utilisateur: ', err);
+            res.json({error:err.sqlMessage})
+        } else {
+            console.log('fetch liste:: ', result);
+            res.json(result);
+        }
+    })
+}
+
 export default {
     creeCodePIN,
     verifierCodePIN,
     verifierSolde,
-    creePseudo
+    creePseudo,
+    liste
 }

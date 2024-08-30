@@ -49,7 +49,7 @@ const verifierCodePIN = (req,res) => {
 
     try {
         const form = PINSchemas.parse({
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             code_pin: req.body.code_pin
         })
         const {
@@ -84,7 +84,7 @@ const verifierCodePIN = (req,res) => {
 const creeCodePIN = (req,res) =>{
     try {
         const form = PINSchemas.parse({
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             code_pin: req.body.code_pin
         })
         const {
@@ -117,7 +117,8 @@ const creeCodePIN = (req,res) =>{
 const creePseudo = (req,res) => {
     try {
         pseudoSchemas.parse(req.body)
-        const {pseudo, id_utilisateur} = req.body
+        const id_utilisateur = req.utilisateur.id_utilisateur
+        const {pseudo} = req.body
         const sql = `UPDATE utilisateur SET pseudo_utilisateur = ? where id = ?`
         mysqlPool.query(sql,[pseudo, id_utilisateur],(err,result)=>{
             if (err) {

@@ -39,7 +39,7 @@ const retrait = (req,res) => {
     try {
         const form = retraitSchema.parse({
             montant: req.body.montant,
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             id_service: req.body.id_service,
             numero_beneficiaire: req.body.numero_beneficiaire,
             numero_expediteur: req.body.numero_expediteur,
@@ -76,9 +76,9 @@ const retrait = (req,res) => {
 }
 
 const infosRetrait = (req,res) =>{
+    const id_user = req.utilisateur.id_utilisateur
     const {
-        id_user,
-        id_serv
+        id_service
     } = req.params
 
     const sql = `SELECT
@@ -97,7 +97,7 @@ const infosRetrait = (req,res) =>{
     WHERE
         u.id = ?
     LIMIT 1`
-    mysqlPool.query(sql,[id_serv,id_user],(err,result)=>{
+    mysqlPool.query(sql,[id_service,id_user],(err,result)=>{
         if(result.length == 0){
             res.json({error:"Aucun donnée trouvé"})
         }
@@ -113,9 +113,10 @@ const infosRetrait = (req,res) =>{
 
 async function recolte(req, res) {
     try {
+        // const {id_utilisateur} = req.utilisateur
         const form = recolteSchema.parse({
             montant: req.body.montant,
-            id_utilisateur: req.body.id_utilisateur,
+            id_utilisateur: req.utilisateur.id_utilisateur,
             id_machine_recolte: req.body.id_machine_recolte,
             code_recolte:req.body.code_recolte
         })
@@ -150,6 +151,7 @@ const historique = (req,res) => {
     const {
         id_utilisateur
     } = req.utilisateur
+
     const sql = `select
             t.id as id_transaction,
             t.reference,
@@ -184,13 +186,14 @@ const historique = (req,res) => {
             LIMIT 5`
     // console.log(sql)
     mysqlPool.query(sql,[id_utilisateur],(err,result)=>{
-        if(result.length == 0){
-            res.json({message:"Aucun historique transaction"})
-        }
         if (err) {
             console.error('Erreur data fecthed:\n', err);
             res.json({error:err.sqlMessage})
-        } else {
+        } 
+        else if(result.length == 0){
+            res.json({message:"Aucun historique transaction"})
+        }
+        else {
             // console.log(sql)
             console.log('Data fetched successfully:', result);
             res.json(result);

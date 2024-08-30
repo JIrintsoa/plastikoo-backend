@@ -176,7 +176,11 @@ class AuthenticationController {
                                 "pseudo_utilisateur": pseudo,
                                 "nom_complet": user.nom_complet
                             }
-                            console.log(userData)
+                            console.log("Here is the data after loged:\n",{
+                                "id_utilisateur":user.id,
+                                "pseudo_utilisateur": pseudo,
+                                "nom_complet": user.nom_complet
+                            })
                             const token = await JwtUtils.generateToken({
                                 "id_utilisateur":user.id,
                                 "pseudo_utilisateur": pseudo,
@@ -251,36 +255,36 @@ class AuthenticationController {
         }
     }
 
-    static verifieRole = (roleArg) => {
-        return (req, res, next) => {
-            const { id_utilisateur } = req.params;
+    // static verifieRole = (roleArg) => {
+    //     return (req, res, next) => {
+    //         const { id_utilisateur } = req.params;
 
-            const query = `
-                SELECT
-                count(u.id) as role_exist
-                FROM utilisateur_role ur
-                JOIN utilisateur u ON ur.id_utilisateur = u.id
-                JOIN role r ON ur.id_role = r.id
-                WHERE ur.id_utilisateur = ? AND ur.id_role = (
-                    SELECT r.id FROM role r WHERE r.designation = ?
-                )
-            `;
+    //         const query = `
+    //             SELECT
+    //             count(u.id) as role_exist
+    //             FROM utilisateur_role ur
+    //             JOIN utilisateur u ON ur.id_utilisateur = u.id
+    //             JOIN role r ON ur.id_role = r.id
+    //             WHERE ur.id_utilisateur = ? AND ur.id_role = (
+    //                 SELECT r.id FROM role r WHERE r.designation = ?
+    //             )
+    //         `;
 
-            mysqlPool.query(query, [id_utilisateur, roleArg], (err, results) => {
-                if (err) {
-                    return res.status(500).json({ error: 'La requête de base de données a échoué', details: err });
-                }
+    //         mysqlPool.query(query, [id_utilisateur, roleArg], (err, results) => {
+    //             if (err) {
+    //                 return res.status(500).json({ error: 'La requête de base de données a échoué', details: err });
+    //             }
 
-                if (results.length > 0) {
-                  // User has the required role
-                    next();
-                } else {
-                  // User does not have the required role
-                    return res.status(403).json({ error: 'Accèss non autorisé' });
-                }
-            });
-        };
-    };
+    //             if (results.length > 0) {
+    //               // User has the required role
+    //                 next();
+    //             } else {
+    //               // User does not have the required role
+    //                 return res.status(403).json({ error: 'Accèss non autorisé' });
+    //             }
+    //         });
+    //     };
+    // };
 
     static verifyRoleToken = (requiredRole) => {
         return async (req, res, next) => {
@@ -288,7 +292,6 @@ class AuthenticationController {
                 // Verify the JWT token
                 const token = req.header('Authorization').replace('Bearer ', '');
                 const decodedToken = jwt.verify(token, JWT_SECRET);
-                // console.log(decodedToken)
                 const { id_utilisateur } = decodedToken;
                 if(id_utilisateur == undefined){
                     res.json({error:"l'utilisateur n'exsite pas"})
@@ -310,7 +313,7 @@ class AuthenticationController {
                         return res.status(500).json({ error: 'La requête de base de données a échoué', details: err });
                     }
                     // console.log(query)
-                    console.log(results[0].role_exist)
+                    // console.log(results[0].role_exist)
                     if (results[0].role_exist > 0) {
                         // User has the required role, proceed to the next middleware
                         req.utilisateur = decodedToken;  // Attach user info to request for further use

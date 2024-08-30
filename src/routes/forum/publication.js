@@ -8,6 +8,6 @@ router.get('', PublicationController.liste)
 
 router.post('', PublicationController.publier)
 
-router.get('/admin/bannir/:id_utilisateur', AuthenticationController.verifieRole('administrateur'),PublicationController.bannir)
+router.get('/admin/bannir/:id_utilisateur', AuthenticationController.verifyRoleToken('administrateur'),PublicationController.bannir)
 
 export default router

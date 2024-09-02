@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import JwtUtils from "../utils/jwt.js"
 import jwt from 'jsonwebtoken';
 import "dotenv/config"
+import Passport  from "passport";
 
 const {JWT_SECRET,BCRYPT_SALT_ROUNDS, MIN_PASSWORD_LENGTH} = process.env;
 
@@ -255,37 +256,6 @@ class AuthenticationController {
         }
     }
 
-    // static verifieRole = (roleArg) => {
-    //     return (req, res, next) => {
-    //         const { id_utilisateur } = req.params;
-
-    //         const query = `
-    //             SELECT
-    //             count(u.id) as role_exist
-    //             FROM utilisateur_role ur
-    //             JOIN utilisateur u ON ur.id_utilisateur = u.id
-    //             JOIN role r ON ur.id_role = r.id
-    //             WHERE ur.id_utilisateur = ? AND ur.id_role = (
-    //                 SELECT r.id FROM role r WHERE r.designation = ?
-    //             )
-    //         `;
-
-    //         mysqlPool.query(query, [id_utilisateur, roleArg], (err, results) => {
-    //             if (err) {
-    //                 return res.status(500).json({ error: 'La requête de base de données a échoué', details: err });
-    //             }
-
-    //             if (results.length > 0) {
-    //               // User has the required role
-    //                 next();
-    //             } else {
-    //               // User does not have the required role
-    //                 return res.status(403).json({ error: 'Accèss non autorisé' });
-    //             }
-    //         });
-    //     };
-    // };
-
     static verifyRoleToken = (requiredRole) => {
         return async (req, res, next) => {
             try {
@@ -330,6 +300,16 @@ class AuthenticationController {
         };
     };
 
+    static googleAuth = Passport.authenticate('google', { scope: ['profile', 'email'] });
+
+    static googleCallback = (req, res) => {
+      const token = signToken(req.user);
+      res.json({ token });
+    };
+    
+    static getProfile = (req, res) => {
+      res.json(req.user);
+    };
 }
 
 export default AuthenticationController

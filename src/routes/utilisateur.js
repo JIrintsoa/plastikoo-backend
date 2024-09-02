@@ -30,4 +30,10 @@ route.put('/cree-pseudo', UtilisateurController.creePseudo)
 
 route.get('',UtilisateurController.liste)
 
+route.get('/auth/google',AuthenticationController.googleAuth)
+
+route.get('/google/callback', AuthenticationController.googleAuth, AuthenticationController.googleCallback);
+
+route.get('/profile', AuthenticationController.verifyRoleToken('utilisateur'), AuthenticationController.getProfile);
+
 export default route;

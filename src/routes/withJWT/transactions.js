@@ -17,11 +17,9 @@ router.get('/retrait/:id_service',AuthenticationController.verifyRoleToken('util
 router.post('/retrait', AuthenticationController.verifyRoleToken('utilisateur'),transactionController.retrait)
 
 // Bon d'achat
-router.get('/:id_utilisateur', AuthenticationController.verifyRoleToken('utilisateur'), BonAchat.liste)
+router.get('', AuthenticationController.verifyRoleToken('utilisateur'), BonAchat.liste)
 
-router.get('/details/:id_utilisateur/:id_service', async (req,res)=>{
-    await BonAchat.details(req, res)
-})
+router.get('/details/:id_service', BonAchat.details)
 
 router.get('',AuthenticationController.verifyRoleToken('utilisateur'),BonAchat.creer)
 

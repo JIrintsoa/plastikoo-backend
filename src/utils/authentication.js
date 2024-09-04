@@ -229,8 +229,9 @@ class AuthenticationController {
             const hashMdp = bcrypt.hashSync(mdp, salt);
             // const hashMdp = hashMdp(mdp)
 
-            const sql = `INSERT INTO utilisateur
-	( nom, prenom, email, mot_de_passe, date_naissance ) VALUES ( ?, ?, ?, ?, ? )`
+    //         const sql = `INSERT INTO utilisateur
+	// ( nom, prenom, email, mot_de_passe, date_naissance ) VALUES ( ?, ?, ?, ?, ? )`
+            const sql = `call inscrireUtilisateur (?, ?, ?, ?, ?)`
             mysqlPool.query(sql,[nom,prenom,email,hashMdp,date_naissance],(err,result)=>{
                 if (err) {
                     console.error('Erreur insertion de donnnee:\n', err);
@@ -299,6 +300,10 @@ class AuthenticationController {
             }
         };
     };
+
+    static logOut = async(req,res) =>{
+    
+    }
 
     static googleAuth = Passport.authenticate('google', { scope: ['profile', 'email'] });
 

@@ -223,7 +223,6 @@ class AuthenticationController {
             signUpSchema.parse(req.body)
 
             const { email, mdp, nom, prenom, date_naissance } = req.body;
-            // console.log(req.body)
 
             const salt = bcrypt.genSaltSync(Number(BCRYPT_SALT_ROUNDS));
             const hashMdp = bcrypt.hashSync(mdp, salt);

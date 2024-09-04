@@ -13,6 +13,10 @@ import UploadFileRoutes from "./routes/upload.js"
 // Import routes with JWT
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
 import AuthenticationController from "./utils/authentication.js";
+import 'dotenv/config'
+
+const host = process.env.DEV_HOST
+const port = process.env.DEV_PORT
 
 const app = express()
 
@@ -44,6 +48,10 @@ app.use('/jwt/transaction', TransactionRoutesJWT)
 
 app.use('/jwt/utilisateur', UtilisateurRoutes)
 
-app.listen(5000, () => {
-    console.log(`App running on http://localhost:5000`)
-})
+// app.listen(5000, () => {
+//     console.log(`App running on http://localhost:5000`)
+// })
+
+app.listen(port, host, () => {
+    console.log(`App running on http://${host}:${port}`);
+});

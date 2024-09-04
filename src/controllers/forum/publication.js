@@ -1,4 +1,6 @@
+import { z,ZodError } from "zod";
 import mysqlPool from "../../config/database.js";
+import UploadController from "../upload.js";
 
 const liste = (req,res) => {
     const sql = `SELECT
@@ -52,17 +54,66 @@ const liste = (req,res) => {
     });
 }
 
+const forumSchemas = z.object({
+    titre: z.string().min(1,{message:"Veuillez ajouter un titre"}),
+    contenu: z.string().min(1,{message:"Veuillez ajouter du contenu"}),
+    lien: z.string().min(1, {message:"Le liens de l'image est vide"}),
+    id_utilisateur: z.number().int().positive({message:"id_utilisateur doit etre superieur a 0"}),
+});
+
 const publier = async(req,res) => {
-    if (req.files) {
-        // Process the uploaded files
-        req.files.forEach(file => {
-            console.log(file.originalname, file.filename, file.path);
-          // Perform any additional file processing or storage operations here
+    try {
+        if(!req.fileUploaded) {
+            return res.status(400).json({ error: 'Erreur à la récuperation du nom de fichier' });
+        }
+        const form = forumSchemas.parse({
+            titre: req.body.titre,
+            contenu: req.body.contenu,
+            lien: req.fileUploaded,
+            id_utilisateur: req.utilisateur.id_utilisateur
+        })
+        const {titre, contenu, lien, id_utilisateur } = form
+        const sql = `INSERT into publication(titre,contenu,lien,id_utilisateur) values (?,?,?,?)`
+        // console.log(form)
+        // const sql_creer_ba = `call creer_ba(?,?,?,?,?)`;
+        mysqlPool.query(sql,[titre,contenu, lien,id_utilisateur],(err,result) => {
+            if (err) {
+                console.error('Erreur création du forum:: ', err);
+                UploadController.deleteFileLocalUploaded(lien)
+                res.json({error:err.sqlMessage})
+            } else {
+                console.log('Publication created succesfully:', result);
+                res.json({message:"Votre publication a bien été crée"});
+            }
         });
-        res.send('Files uploaded successfully!');
-    } else {
-        res.status(400).send('No files were uploaded.');
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const validationErrors = error.errors.map(err => err.message).join(', ');
+            if (req.fileUploaded) {
+                UploadController.deleteFileLocalUploaded(req.fileUploaded)
+            }
+            console.error(error)
+            res.status(400).json({ error: validationErrors });
+        } else {
+            console.error(error);
+            if (req.fileUploaded) {
+                UploadController.deleteFileLocalUploaded(req.fileUploaded)
+            } // Log the unexpected error for debugging
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
     }
+
+    // console.log(req.fileUploaded)
+    // if (req.files) {
+    //     // Process the uploaded files
+    //     req.files.forEach(file => {
+    //         console.log(file.originalname, file.filename, file.path);
+    //       // Perform any additional file processing or storage operations here
+    //     });
+    //     res.send('Files uploaded successfully!');
+    // } else {
+    //     res.status(400).send('No files were uploaded.');
+    // }
     // console.log('hello world')
 }
 

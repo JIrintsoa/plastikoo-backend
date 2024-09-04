@@ -1,6 +1,8 @@
 import { Router } from "express";
 import UtilisateurController from "../controllers/utilisateur.js";
 import AuthenticationController from "../utils/authentication.js";
+import Passport from "passport";
+import '../utils/passport.config.js'
 
 const route =  Router()
 
@@ -25,15 +27,37 @@ route.post('/connecter', AuthenticationController.login)
 
 route.post('/inscription',AuthenticationController.sInscrire)
 
-route.put('/cree-pseudo', UtilisateurController.creePseudo)
+route.put('/cree-pseudo', AuthenticationController.verifyRoleToken('utilisateur'),UtilisateurController.creePseudo)
 // route.update('/pseudo', UtilisateurController.creePseudo)
 
 route.get('',UtilisateurController.liste)
 
-route.get('/auth/google',AuthenticationController.googleAuth)
+route.get('/auth/google',
+    Passport.authenticate('google', {
+        scope: ['email','profile'],
+    })
+);
 
-route.get('/google/callback', AuthenticationController.googleAuth, AuthenticationController.googleCallback);
+route.get('/auth/google/callback',
+    Passport.authenticate('google', {
+        successRedirect: '/auth/google/protected',
+        failureRedirect: '/auth/google/failure'
+    })
+)
 
-route.get('/profile', AuthenticationController.verifyRoleToken('utilisateur'), AuthenticationController.getProfile);
+route.get('/auth/google/failure', (req,res)=>{
+    res.send(`Something went wrong`)
+})
+
+route.get('/auth/google/callback', Passport.authenticate('google', { failureRedirect: '/login' }),
+    function(req, res) {
+        res.redirect('/');
+    }
+)
+
+route.get('/auth/protected', (req,res)=>{
+    let name = req.user.displayName
+    res.send(`Hello world ${name}`)
+})
 
 export default route;

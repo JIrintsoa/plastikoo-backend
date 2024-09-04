@@ -42,7 +42,7 @@ app.use('/upload',UploadFileRoutes)
 // API with JWT token
 app.use('/jwt/transaction', TransactionRoutesJWT)
 
-app.use('/utilisateur', UtilisateurRoutes)
+app.use('/jwt/utilisateur', UtilisateurRoutes)
 
 app.listen(5000, () => {
     console.log(`App running on http://localhost:5000`)

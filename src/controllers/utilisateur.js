@@ -2,6 +2,7 @@ import { z,ZodError } from "zod"
 import mysqlPool from "../config/database.js"
 
 import 'dotenv/config'
+import UploadController from "./upload.js"
 
 const PINSchemas = z.object({
     id_utilisateur: z.number().int().positive({message:"l'id_utilisateur doit etre positive"}),
@@ -116,13 +117,20 @@ const creeCodePIN = (req,res) =>{
 
 const creePseudo = (req,res) => {
     try {
+        if(!req.fileUploaded) {
+            return res.status(400).json({ error: 'Erreur à la récuperation du nom de fichier' });
+        }
         pseudoSchemas.parse(req.body)
+
         const id_utilisateur = req.utilisateur.id_utilisateur
         const {pseudo} = req.body
-        const sql = `UPDATE utilisateur SET pseudo_utilisateur = ? where id = ?`
-        mysqlPool.query(sql,[pseudo, id_utilisateur],(err,result)=>{
+        const pseudo_img = req.fileUploaded
+
+        const sql = `UPDATE utilisateur SET pseudo_utilisateur = ?, img_profil = ? where id = ?`
+        mysqlPool.query(sql,[pseudo,pseudo_img,id_utilisateur],(err,result)=>{
             if (err) {
                 console.error('Erreur d\'ajout pseudo de l\'utilisateur: ', err);
+                UploadController.deleteFileLocalUploaded(pseudo_img)
                 res.json({error:err.sqlMessage})
             } else {
                 console.log('ajout de pseudo success', result);
@@ -132,15 +140,17 @@ const creePseudo = (req,res) => {
         // console.log('helloo world')
     } catch (error) {
         if (error instanceof ZodError) {
-            // Map the validation errors to the corresponding fields
-            const validationErrors = error.errors.reduce((acc, err) => {
-                acc[err.path[0]] = err.message;
-                return acc;
-            }, {});
-            // Return the validation errors in the desired format
+            const validationErrors = error.errors.map(err => err.message).join(', ');
+            if (req.fileUploaded) {
+                UploadController.deleteFileLocalUploaded(req.fileUploaded)
+            }
+            console.error(error)
             res.status(400).json({ error: validationErrors });
         } else {
-            console.error(error); // Log the unexpected error for debugging
+            console.error(error);
+            if (req.fileUploaded) {
+                UploadController.deleteFileLocalUploaded(req.fileUploaded)
+            } // Log the unexpected error for debugging
             res.status(500).json({ error: 'Internal Server Error' });
         }
     }

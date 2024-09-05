@@ -2,47 +2,118 @@ import { z,ZodError } from "zod";
 import mysqlPool from "../../config/database.js";
 import UploadController from "../upload.js";
 
+const forumSchemas = z.object({
+    titre: z.string().min(1,{message:"Veuillez ajouter un titre"}),
+    contenu: z.string().min(1,{message:"Veuillez ajouter du contenu"}),
+    lien: z.string().min(1, {message:"L'image est vide"}),
+    id_utilisateur: z.number().int().positive({message:"id_utilisateur doit etre superieur a 0"}),
+});
+
+const commentaireSchemas = z.object({
+    contenu: z.string().min(1,{message:"Veuillez ajouter un commenter"}),
+    id_user_mentionne: z.number().nullable(),
+});
+
 const liste = (req,res) => {
+    // const sql = `SELECT
+    //         publication.id AS publication_id,
+    //         publication.titre,
+    //         publication.contenu,
+    //         publication.date_creation,
+    //         publication.lien,
+    //         utilisateur.nom AS utilisateur_nom,
+    //         utilisateur.prenom AS utilisateur_prenom,
+    //         utilisateur.pseudo_utilisateur AS pseudo_utilisateur,
+    //         utilisateur.email AS utilisateur_email,
+    //         utilisateur.url_profil AS utilisateur_url_profil,
+    //         COUNT(DISTINCT reaction_pub.id) AS nbr_reactions,
+    //         COUNT(DISTINCT commentaire_pub.id) AS nbr_commentaires
+    //     FROM
+    //         plastikoo2.publication
+    //     JOIN
+    //         plastikoo2.utilisateur
+    //     ON
+    //         publication.id_utilisateur = utilisateur.id
+    //     LEFT JOIN
+    //         plastikoo2.reaction_pub
+    //     ON
+    //         publication.id = reaction_pub.id_publication
+    //     LEFT JOIN
+    //         plastikoo2.commentaire_pub
+    //     ON
+    //         publication.id = commentaire_pub.id_publication
+    //     GROUP BY
+    //         publication.id,
+    //         publication.titre,
+    //         publication.contenu,
+    //         publication.date_creation,
+    //         publication.lien,
+    //         utilisateur.nom,
+    //         utilisateur.prenom,
+    //         utilisateur.email,
+    //         utilisateur.url_profil
+    //     ORDER BY
+    //         publication.date_creation DESC;
+    //     `
     const sql = `SELECT
-            publication.id AS publication_id,
-            publication.titre,
-            publication.contenu,
-            publication.date_creation,
-            publication.lien,
-            utilisateur.nom AS utilisateur_nom,
-            utilisateur.prenom AS utilisateur_prenom,
-            utilisateur.pseudo_utilisateur AS pseudo_utilisateur,
-            utilisateur.email AS utilisateur_email,
-            utilisateur.url_profil AS utilisateur_url_profil,
-            COUNT(DISTINCT reaction_pub.id) AS nbr_reactions,
-            COUNT(DISTINCT commentaire_pub.id) AS nbr_commentaires
-        FROM
-            plastikoo2.publication
-        JOIN
-            plastikoo2.utilisateur
-        ON
-            publication.id_utilisateur = utilisateur.id
-        LEFT JOIN
-            plastikoo2.reaction_pub
-        ON
-            publication.id = reaction_pub.id_publication
-        LEFT JOIN
-            plastikoo2.commentaire_pub
-        ON
-            publication.id = commentaire_pub.id_publication
-        GROUP BY
-            publication.id,
-            publication.titre,
-            publication.contenu,
-            publication.date_creation,
-            publication.lien,
-            utilisateur.nom,
-            utilisateur.prenom,
-            utilisateur.email,
-            utilisateur.url_profil
-        ORDER BY
-            publication.date_creation DESC;
-        `
+    p.id AS publication_id,
+    p.titre,
+    p.contenu,
+    p.date_creation,
+    p.lien,
+    u.nom AS utilisateur_nom,
+    u.prenom AS utilisateur_prenom,
+    u.pseudo_utilisateur AS pseudo_utilisateur,
+    u.email AS utilisateur_email,
+    u.url_profil AS utilisateur_url_profil,
+    COUNT(DISTINCT rp.id) AS nbr_reactions,
+    COUNT(DISTINCT cp.id) AS nbr_commentaires
+FROM
+    plastikoo2.publication p
+JOIN
+    plastikoo2.utilisateur u
+ON
+    p.id_utilisateur = u.id
+LEFT JOIN
+    plastikoo2.reaction_pub rp
+ON
+    p.id = rp.id_publication
+LEFT JOIN
+    plastikoo2.commentaire_pub cp
+ON
+    p.id = cp.id_publication
+JOIN
+    plastikoo2.publication_valide pv
+ON
+    p.id = pv.id_publication
+JOIN
+    plastikoo2.utilisateur ur
+ON
+    pv.id_utilisateur = ur.id
+JOIN
+    plastikoo2.utilisateur_role ur_role
+ON
+    ur.id = ur_role.id_utilisateur
+JOIN
+    plastikoo2.role r
+ON
+    ur_role.id_role = r.id
+AND r.designation = 'administrateur'
+GROUP BY
+    p.id,
+    p.titre,
+    p.contenu,
+    p.date_creation,
+    p.lien,
+    u.nom,
+    u.prenom,
+    u.pseudo_utilisateur,
+    u.email,
+    u.url_profil
+ORDER BY
+    p.date_creation DESC;
+`
+
     mysqlPool.query(sql,(err,result) => {
         if (err) {
             console.error('Erreur data fetched:: \n', err);
@@ -54,13 +125,7 @@ const liste = (req,res) => {
     });
 }
 
-const forumSchemas = z.object({
-    titre: z.string().min(1,{message:"Veuillez ajouter un titre"}),
-    contenu: z.string().min(1,{message:"Veuillez ajouter du contenu"}),
-    lien: z.string().min(1, {message:"Le liens de l'image est vide"}),
-    id_utilisateur: z.number().int().positive({message:"id_utilisateur doit etre superieur a 0"}),
-});
-
+// ajouter publication
 const publier = async(req,res) => {
     try {
         if(!req.fileUploaded) {
@@ -69,17 +134,18 @@ const publier = async(req,res) => {
         const form = forumSchemas.parse({
             titre: req.body.titre,
             contenu: req.body.contenu,
-            lien: req.fileUploaded,
+            img: req.fileUploaded,
             id_utilisateur: req.utilisateur.id_utilisateur
         })
-        const {titre, contenu, lien, id_utilisateur } = form
-        const sql = `INSERT into publication(titre,contenu,lien,id_utilisateur) values (?,?,?,?)`
+        const {titre, contenu, img, id_utilisateur } = form
+        // const sql = `INSERT into publication(titre,contenu,img,id_utilisateur) values (?,?,?,?)`
         // console.log(form)
+        const sql = `CALL storePublicationPhoto(?,?,?,?)`
         // const sql_creer_ba = `call creer_ba(?,?,?,?,?)`;
-        mysqlPool.query(sql,[titre,contenu, lien,id_utilisateur],(err,result) => {
+        mysqlPool.query(sql,[titre,contenu, id_utilisateur,img],(err,result) => {
             if (err) {
                 console.error('Erreur création du forum:: ', err);
-                UploadController.deleteFileLocalUploaded(lien)
+                UploadController.deleteFileLocalUploaded(img)
                 res.json({error:err.sqlMessage})
             } else {
                 console.log('Publication created succesfully:', result);
@@ -127,8 +193,116 @@ const bannir = async (req,res) => {
     }
 }
 
+// valider publication
+const valider = async(req,res) => {
+    try {
+        const {id_publication} = req.params
+        const {id_utilisateur} = req.utilisateur
+        const sql = `INSERT INTO publication_valide (id_utilisateur,id_publication) VALUES (?,?)`
+        mysqlPool.query(sql,[id_utilisateur,id_publication],(err,result)=>{
+            if(err){
+                console.log('erreur validation publication :: \n',err)
+                res.status(401).json({error:err.message})
+            }
+            else {
+                console.log(result)
+                res.status(200).json({message:"La publication a été validée"})
+            }
+        })
+    } catch (error) {
+        console.log('Internal erreur :: \n',err)
+        res.status(401).json({error:err.message})
+    }
+}
+
+// supprimer publication
+const supprimer = async (req,res) => {
+    try {
+        const {id_publication} = req.params
+        const {id_utilisateur} = req.utilisateur
+        const sql = `delete from publication where id = ? and id_utilisateur = ?`
+        mysqlPool.query(sql,[id_publication,id_utilisateur],(err,result)=>{
+            if(err){
+                console.log('erreur validation publication :: \n',err)
+                res.status(401).json({error:err.message})
+            }
+            else {
+                console.log(result)
+                if(result.affectedRows == 0){
+                    res.status(200).json({error:"Vous n'avez pas droit à supprimer cette publication"})
+                }
+                res.status(200).json({message:"La publication a été validée"})
+            }
+        })
+    } catch (error) {
+        console.log('Internal erreur :: \n',err)
+        res.status(401).json({error:err.message})
+    }
+}
+
+// reagir a une publication
+const reagir = async (req,res) => {
+    try {
+        const {id_publication} = req.params
+        const {id_utilisateur} = req.utilisateur
+        const sql = `call reagirPublication (?, ?)`
+        mysqlPool.query(sql,[id_publication,id_utilisateur],(err,result)=>{
+            if(err){
+                console.log('erreur reaction publication :: \n',err)
+                res.status(401).json({error:err.message})
+            }
+            else {
+                console.log(result)
+                res.status(200).json({message:"La publication a été réagi"})
+            }
+        })
+    } catch (error) {
+        console.log('Internal erreur :: \n',err)
+        res.status(401).json({error:err.message})
+    }
+}
+
+// commenter une publication
+const commenter = async (req,res) => {
+    try {
+
+        commentaireSchemas.parse(req.body)
+        const form = forumSchemas.parse({
+            titre: req.body.titre,
+            contenu: req.body.contenu,
+            lien: req.fileUploaded,
+            id_utilisateur: req.utilisateur.id_utilisateur
+        })
+        const {titre, contenu, lien, id_utilisateur } = form
+        const sql = `INSERT INTO commentaire_pub (contenu, id_utilisateur, id_publication) VALUES (?, ?, ?)`
+        mysqlPool.query(sql,[titre,contenu, lien,id_utilisateur],(err,result) => {
+            if (err) {
+                console.error('Erreur commentaire publication :: ', err);
+                UploadController.deleteFileLocalUploaded(lien)
+                res.json({error:err.sqlMessage})
+            } else {
+                console.log('Commentaire created succesfully:', result);
+                res.json({message:"Votre publication a bien été crée"});
+            }
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const validationErrors = error.errors.map(err => err.message).join(', ');
+            console.error(error)
+            res.status(400).json({ error: validationErrors });
+        } else {
+            console.error(error); // Log the unexpected error for debugging
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+}
+
 export default {
     liste,
     publier,
-    bannir
+    bannir,
+    valider,
+    supprimer,
+    reagir,
+    commenter
 }

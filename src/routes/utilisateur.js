@@ -3,6 +3,7 @@ import UtilisateurController from "../controllers/utilisateur.js";
 import AuthenticationController from "../utils/authentication.js";
 import Passport from "passport";
 import '../utils/passport.config.js'
+import UploadController from "../controllers/upload.js";
 
 const route =  Router()
 
@@ -27,7 +28,17 @@ route.post('/connecter', AuthenticationController.login)
 
 route.post('/inscription',AuthenticationController.sInscrire)
 
-route.put('/cree-pseudo', AuthenticationController.verifyRoleToken('utilisateur'),UtilisateurController.creePseudo)
+// route.post('/cree-pseudo',
+//     AuthenticationController.verifyRoleToken('utilisateur'),
+//     UploadController.singleFileUpload('pseudo'),
+//     UtilisateurController.creePseudo
+// )
+
+route.post('/cree-pseudo',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    UploadController.singleFileUpload('pseudo'),
+    UtilisateurController.creePseudo
+)
 // route.update('/pseudo', UtilisateurController.creePseudo)
 
 route.get('',UtilisateurController.liste)

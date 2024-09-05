@@ -5,7 +5,7 @@ import UploadController from "../upload.js";
 const forumSchemas = z.object({
     titre: z.string().min(1,{message:"Veuillez ajouter un titre"}),
     contenu: z.string().min(1,{message:"Veuillez ajouter du contenu"}),
-    lien: z.string().min(1, {message:"L'image est vide"}),
+    img: z.string().min(1, {message:"L'image est vide"}),
     id_utilisateur: z.number().int().positive({message:"id_utilisateur doit etre superieur a 0"}),
 });
 

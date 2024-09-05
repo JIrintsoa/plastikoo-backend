@@ -52,7 +52,8 @@ function getUploadMiddleware(typeFieldName) {
 }
 
 function deleteFileLocalUploaded(filename){
-    const filePath = path.join(process.env.DIR_LOCAL_STORAGE_FILE, filename);
+    const fileNameDir = '/uploads/'+filename
+    const filePath = path.join(process.env.DIR_LOCAL_STORAGE_FILE, fileNameDir);
     fs.unlink(filePath, (unlinkErr) => {
         if (unlinkErr) {
             console.error('Erreur lors de la suppression du fichier: ', unlinkErr);

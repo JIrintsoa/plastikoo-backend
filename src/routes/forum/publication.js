@@ -17,8 +17,28 @@ router.post('',
     UploadController.singleFileUpload('forum'),
     PublicationController.publier)
 
+router.delete('/:id_publication',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    PublicationController.supprimer
+)
+
+router.get ('/reagir/:id_publication',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    PublicationController.reagir
+)
+
+//commenter publication
+router.post('/commenter/:id_publication',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    PublicationController.commenter
+)
+
 // valider publication
-// router.
+router.get('/admin/valider/:id_publication',
+    AuthenticationController.verifyRoleToken('administrateur'),
+    PublicationController.valider
+)
+
 // Supprimer un publication
 router.get('/admin/bannir/:id_utilisateur', AuthenticationController.verifyRoleToken('administrateur'),PublicationController.bannir)
 

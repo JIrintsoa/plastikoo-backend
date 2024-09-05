@@ -177,11 +177,11 @@ class AuthenticationController {
                                 "pseudo_utilisateur": pseudo,
                                 "nom_complet": user.nom_complet
                             }
-                            console.log("Here is the data after loged:\n",{
-                                "id_utilisateur":user.id,
-                                "pseudo_utilisateur": pseudo,
-                                "nom_complet": user.nom_complet
-                            })
+                            // console.log("Here is the data after loged:\n",{
+                            //     "id_utilisateur":user.id,
+                            //     "pseudo_utilisateur": pseudo,
+                            //     "nom_complet": user.nom_complet
+                            // })
                             const token = await JwtUtils.generateToken({
                                 "id_utilisateur":user.id,
                                 "pseudo_utilisateur": pseudo,

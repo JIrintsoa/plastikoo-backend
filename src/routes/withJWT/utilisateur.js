@@ -1,6 +1,7 @@
 import { Router } from "express";
 import UtilisateurController from "../../controllers/utilisateur.js";
 import AuthenticationController from "../../utils/authentication.js";
+import UploadController from "../../controllers/upload.js";
 
 const route =  Router()
 
@@ -21,7 +22,11 @@ route.post('/verifie-solde', AuthenticationController.verifyRoleToken('utilisate
     await UtilisateurController.verifierSolde(arg,res)
 })
 
-route.put('/cree-pseudo', AuthenticationController.verifyRoleToken('utilisateur'),UtilisateurController.creePseudo)
+route.put('/cree-pseudo',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    UploadController.singleFileUpload('pseudo'),
+    UtilisateurController.creePseudo
+)
 
 
 export default route;

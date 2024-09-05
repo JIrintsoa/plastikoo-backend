@@ -15,108 +15,116 @@ const commentaireSchemas = z.object({
 });
 
 const liste = (req,res) => {
-    // const sql = `SELECT
-    //         publication.id AS publication_id,
-    //         publication.titre,
-    //         publication.contenu,
-    //         publication.date_creation,
-    //         publication.lien,
-    //         utilisateur.nom AS utilisateur_nom,
-    //         utilisateur.prenom AS utilisateur_prenom,
-    //         utilisateur.pseudo_utilisateur AS pseudo_utilisateur,
-    //         utilisateur.email AS utilisateur_email,
-    //         utilisateur.url_profil AS utilisateur_url_profil,
-    //         COUNT(DISTINCT reaction_pub.id) AS nbr_reactions,
-    //         COUNT(DISTINCT commentaire_pub.id) AS nbr_commentaires
-    //     FROM
-    //         plastikoo2.publication
-    //     JOIN
-    //         plastikoo2.utilisateur
-    //     ON
-    //         publication.id_utilisateur = utilisateur.id
-    //     LEFT JOIN
-    //         plastikoo2.reaction_pub
-    //     ON
-    //         publication.id = reaction_pub.id_publication
-    //     LEFT JOIN
-    //         plastikoo2.commentaire_pub
-    //     ON
-    //         publication.id = commentaire_pub.id_publication
-    //     GROUP BY
-    //         publication.id,
-    //         publication.titre,
-    //         publication.contenu,
-    //         publication.date_creation,
-    //         publication.lien,
-    //         utilisateur.nom,
-    //         utilisateur.prenom,
-    //         utilisateur.email,
-    //         utilisateur.url_profil
-    //     ORDER BY
-    //         publication.date_creation DESC;
-    //     `
     const sql = `SELECT
-    p.id AS publication_id,
-    p.titre,
-    p.contenu,
-    p.date_creation,
-    p.lien,
-    u.nom AS utilisateur_nom,
-    u.prenom AS utilisateur_prenom,
-    u.pseudo_utilisateur AS pseudo_utilisateur,
-    u.email AS utilisateur_email,
-    pp.img_url as img_publication,
-    COUNT(DISTINCT rp.id) AS nbr_reactions,
-    COUNT(DISTINCT cp.id) AS nbr_commentaires
-FROM
-    plastikoo2.publication p
-JOIN
-    plastikoo2.utilisateur u
-ON
-    p.id_utilisateur = u.id
-LEFT JOIN
-    plastikoo2.reaction_pub rp
-ON
-    p.id = rp.id_publication
-LEFT JOIN
-    plastikoo2.commentaire_pub cp
-ON
-    p.id = cp.id_publication
-LEFT JOIN
-    plastikoo2.photo_publication pp
-ON
-    p.id = pp.id_publication
-JOIN
-    plastikoo2.publication_valide pv
-ON
-    p.id = pv.id_publication
-JOIN
-    plastikoo2.utilisateur ur
-ON
-    pv.id_utilisateur = ur.id
-JOIN
-    plastikoo2.utilisateur_role ur_role
-ON
-    ur.id = ur_role.id_utilisateur
-JOIN
-    plastikoo2.role r
-ON
-    ur_role.id_role = r.id
-AND r.designation = 'administrateur'
-GROUP BY
-    p.id,
-    p.titre,
-    p.contenu,
-    p.date_creation,
-    p.lien,
-    u.nom,
-    u.prenom,
-    u.pseudo_utilisateur,
-    u.email,
-    pp.img_url
-ORDER BY
-    p.date_creation DESC;
-`
+            publication.id AS publication_id,
+            publication.titre,
+            publication.contenu,
+            publication.date_creation,
+            publication.lien,
+            utilisateur.nom AS utilisateur_nom,
+            utilisateur.prenom AS utilisateur_prenom,
+            utilisateur.pseudo_utilisateur AS pseudo_utilisateur,
+            utilisateur.email AS utilisateur_email,
+            utilisateur.url_profil AS utilisateur_url_profil,
+            pp.img_url as img_publication,
+            pp.img_alt,
+            COUNT(DISTINCT reaction_pub.id) AS nbr_reactions,
+            COUNT(DISTINCT commentaire_pub.id) AS nbr_commentaires
+        FROM
+            plastikoo2.publication
+        JOIN
+            plastikoo2.utilisateur
+        ON
+            publication.id_utilisateur = utilisateur.id
+        LEFT JOIN
+            plastikoo2.photo_publication pp
+        ON
+            pp.id_publication = publication.id
+        LEFT JOIN
+            plastikoo2.reaction_pub
+        ON
+            publication.id = reaction_pub.id_publication
+        LEFT JOIN
+            plastikoo2.commentaire_pub
+        ON
+            publication.id = commentaire_pub.id_publication
+        GROUP BY
+            publication.id,
+            publication.titre,
+            publication.contenu,
+            publication.date_creation,
+            publication.lien,
+            utilisateur.nom,
+            utilisateur.prenom,
+            utilisateur.email,
+            utilisateur.url_profil,
+            pp.img_url,
+            pp.img_alt
+        ORDER BY
+            publication.date_creation DESC;
+        `
+//     const sql = `SELECT
+//     p.id AS publication_id,
+//     p.titre,
+//     p.contenu,
+//     p.date_creation,
+//     p.lien,
+//     u.nom AS utilisateur_nom,
+//     u.prenom AS utilisateur_prenom,
+//     u.pseudo_utilisateur AS pseudo_utilisateur,
+//     u.email AS utilisateur_email,
+//     pp.img_url as img_publication,
+//     COUNT(DISTINCT rp.id) AS nbr_reactions,
+//     COUNT(DISTINCT cp.id) AS nbr_commentaires
+// FROM
+//     plastikoo2.publication p
+// JOIN
+//     plastikoo2.utilisateur u
+// ON
+//     p.id_utilisateur = u.id
+// LEFT JOIN
+//     plastikoo2.reaction_pub rp
+// ON
+//     p.id = rp.id_publication
+// LEFT JOIN
+//     plastikoo2.commentaire_pub cp
+// ON
+//     p.id = cp.id_publication
+// LEFT JOIN
+//     plastikoo2.photo_publication pp
+// ON
+//     p.id = pp.id_publication
+// JOIN
+//     plastikoo2.publication_valide pv
+// ON
+//     p.id = pv.id_publication
+// JOIN
+//     plastikoo2.utilisateur ur
+// ON
+//     pv.id_utilisateur = ur.id
+// JOIN
+//     plastikoo2.utilisateur_role ur_role
+// ON
+//     ur.id = ur_role.id_utilisateur
+// JOIN
+//     plastikoo2.role r
+// ON
+//     ur_role.id_role = r.id
+// AND r.designation = 'administrateur'
+// GROUP BY
+//     p.id,
+//     p.titre,
+//     p.contenu,
+//     p.date_creation,
+//     p.lien,
+//     u.nom,
+//     u.prenom,
+//     u.pseudo_utilisateur,
+//     u.email,
+//     pp.img_url
+// ORDER BY
+//     p.date_creation DESC;
+//     `
 
     mysqlPool.query(sql,(err,result) => {
         if (err) {

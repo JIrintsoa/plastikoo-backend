@@ -65,7 +65,7 @@ const liste = (req,res) => {
     u.prenom AS utilisateur_prenom,
     u.pseudo_utilisateur AS pseudo_utilisateur,
     u.email AS utilisateur_email,
-    u.url_profil AS utilisateur_url_profil,
+    pp.img_url as img_publication,
     COUNT(DISTINCT rp.id) AS nbr_reactions,
     COUNT(DISTINCT cp.id) AS nbr_commentaires
 FROM
@@ -82,6 +82,10 @@ LEFT JOIN
     plastikoo2.commentaire_pub cp
 ON
     p.id = cp.id_publication
+LEFT JOIN
+    plastikoo2.photo_publication pp
+ON
+    p.id = pp.id_publication
 JOIN
     plastikoo2.publication_valide pv
 ON
@@ -109,7 +113,7 @@ GROUP BY
     u.prenom,
     u.pseudo_utilisateur,
     u.email,
-    u.url_profil
+    pp.img_url
 ORDER BY
     p.date_creation DESC;
 `

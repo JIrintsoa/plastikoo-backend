@@ -10,8 +10,7 @@ const forumSchemas = z.object({
 });
 
 const commentaireSchemas = z.object({
-    contenu: z.string().min(1,{message:"Veuillez ajouter un commenter"}),
-    id_user_mentionne: z.number().nullable(),
+    contenu: z.string().min(1,{message:"Veuillez ajouter un commenter"})
 });
 
 const liste = (req,res) => {
@@ -252,6 +251,29 @@ const supprimer = async (req,res) => {
     }
 }
 
+const supprimerAdmin = async (req,res) => {
+    try {
+        const {id_publication} = req.params
+        const sql = `delete from publication where id = ? `
+        mysqlPool.query(sql,[id_publication],(err,result)=>{
+            if(err){
+                console.log('erreur validation publication :: \n',err)
+                res.status(401).json({error:err.message})
+            }
+            else {
+                console.log(result)
+                if(result.affectedRows == 0){
+                    res.status(200).json({error:"Vous n'avez pas droit à supprimer cette publication"})
+                }
+                res.status(200).json({message:"La publication a été supprimée"})
+            }
+        })
+    } catch (error) {
+        console.log('Internal erreur :: \n',err)
+        res.status(401).json({error:err.message})
+    }
+}
+
 // reagir a une publication
 const reagir = async (req,res) => {
     try {
@@ -277,24 +299,50 @@ const reagir = async (req,res) => {
 // commenter une publication
 const commenter = async (req,res) => {
     try {
-
         commentaireSchemas.parse(req.body)
-        const form = forumSchemas.parse({
-            titre: req.body.titre,
-            contenu: req.body.contenu,
-            lien: req.fileUploaded,
-            id_utilisateur: req.utilisateur.id_utilisateur
-        })
-        const {titre, contenu, lien, id_utilisateur } = form
+
+        const {id_publication} = req.params
+        const {id_utilisateur} = req.utilisateur
+        const {contenu} = req.body
+
         const sql = `INSERT INTO commentaire_pub (contenu, id_utilisateur, id_publication) VALUES (?, ?, ?)`
-        mysqlPool.query(sql,[titre,contenu, lien,id_utilisateur],(err,result) => {
+        mysqlPool.query(sql,[contenu,id_utilisateur,id_publication],(err,result) => {
             if (err) {
                 console.error('Erreur commentaire publication :: ', err);
-                UploadController.deleteFileLocalUploaded(lien)
                 res.json({error:err.sqlMessage})
             } else {
                 console.log('Commentaire created succesfully:', result);
-                res.json({message:"Votre publication a bien été crée"});
+                res.json({message:"Votre commentaire a bien été crée"});
+            }
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const validationErrors = error.errors.map(err => err.message).join(', ');
+            console.error(error)
+            res.status(400).json({ error: validationErrors });
+        } else {
+            console.error(error); // Log the unexpected error for debugging
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+}
+
+const repondreCommentaire = async (req,res) => {
+    try {
+        commentaireSchemas.parse(req.body)
+
+        const {id_publication, id_commentaire} = req.params
+        const {id_utilisateur} = req.utilisateur
+        const {contenu} = req.body
+
+        const sql = `INSERT INTO commentaire_pub (contenu, id_utilisateur, id_publication,id_main_commentaire) VALUES (?, ?, ?,?)`
+        mysqlPool.query(sql,[contenu,id_utilisateur,id_publication,id_commentaire],(err,result) => {
+            if (err) {
+                console.error('Erreur commentaire publication :: ', err);
+                res.json({error:err.sqlMessage})
+            } else {
+                console.log('Commentaire created succesfully:', result);
+                res.json({message:"Votre commentaire a bien été crée"});
             }
         });
     } catch (error) {
@@ -315,6 +363,8 @@ export default {
     bannir,
     valider,
     supprimer,
+    supprimerAdmin,
     reagir,
-    commenter
+    commenter,
+    repondreCommentaire
 }

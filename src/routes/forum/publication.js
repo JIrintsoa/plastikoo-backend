@@ -39,6 +39,11 @@ router.get('/admin/valider/:id_publication',
     PublicationController.valider
 )
 
+router.get('/admin/valider/:id_publication',
+    AuthenticationController.verifyRoleToken('administrateur'),
+    PublicationController.valider
+)
+
 // Supprimer un publication
 router.get('/admin/bannir/:id_utilisateur', AuthenticationController.verifyRoleToken('administrateur'),PublicationController.bannir)
 

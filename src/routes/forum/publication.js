@@ -33,6 +33,12 @@ router.post('/commenter/:id_publication',
     PublicationController.commenter
 )
 
+// commenter un commentaire
+router.post('/commentaire/repondre/:id_publication/:id_commentaire',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    PublicationController.repondreCommentaire
+)
+
 // valider publication
 router.get('/admin/valider/:id_publication',
     AuthenticationController.verifyRoleToken('administrateur'),
@@ -42,6 +48,11 @@ router.get('/admin/valider/:id_publication',
 router.get('/admin/valider/:id_publication',
     AuthenticationController.verifyRoleToken('administrateur'),
     PublicationController.valider
+)
+
+router.delete('/admin/:id_publication',
+    AuthenticationController.verifyRoleToken('administrateur'),
+    PublicationController.supprimerAdmin
 )
 
 // Supprimer un publication

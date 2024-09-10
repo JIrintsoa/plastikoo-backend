@@ -24,6 +24,23 @@ const pseudoSchemas = z.object({
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]+$/, "Le pseudo doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un underscore.")
 })
 
+const profileSchemas = z.object({
+    email: z.string().min(1, "L'email est requis").email("Email invalide"),
+    pseudo: z.string().min(1, "Pseudo est requis"),
+    nom: z.string().min(1, "Votre nom est requis"),
+    prenom: z.string().min(1, "Votre prénom est requis"),
+    date_naissance: z.string()
+    .transform(dateStr => DateFormat.parseDate(dateStr))
+    .refine(date => {
+        const today = new Date();
+        const minAge = 18;
+        const minBirthDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+        return date <= minBirthDate; // Ensure the birthdate is at least 18 years ago
+    }, {
+        message: "Vous devez avoir au moins 18 ans.",
+    })
+});
+
 const verifierSolde = ({id_user, somme},res) => {
     let isVerify = 0
     const form = verifieSoldeSchemas.parse({
@@ -169,10 +186,45 @@ const liste = (req,res) =>{
     })
 }
 
+const modifierProfile = (req,res) => {
+    const userId = req.utilisateur.id_utilisateur;
+    profileSchemas.parse(req.body)
+
+    const { nom, prenom,email, date_naissance } = req.body;
+
+    // Create dynamic SQL query based on provided fields
+    let updateFields = [];
+    if (nom) updateFields.push(`nom = '${nom}'`);
+    if (prenom) updateFields.push(`prenom = '${prenom}'`);
+    if (email) updateFields.push(`email = '${email}'`);
+    if (date_naissance) updateFields.push(`date_naissance = '${date_naissance}'`);
+
+    if (updateFields.length === 0) {
+        return res.status(400).send('No fields to update');
+    }
+
+    const query = `UPDATE utilisateur SET ${updateFields.join(', ')} WHERE id = ?`;
+
+    // Execute the query
+    db.query(query, [userId], (err, result) => {
+        if (err) {
+            console.error('Error updating user:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).send('User not found');
+        }
+
+        res.send('User updated successfully');
+    });
+}
+
 export default {
     creeCodePIN,
     verifierCodePIN,
     verifierSolde,
     creePseudo,
-    liste
+    liste,
+    modifierProfile
 }

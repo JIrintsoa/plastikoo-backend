@@ -44,6 +44,11 @@ router.get('/commentaire/:id_publication',
     PublicationController.listeCommentaire
 )
 
+router.get('/commentaire/:id_publication/:id_commentaire',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    PublicationController.listSousCommentaire
+)
+
 // valider publication
 router.get('/admin/valider/:id_publication',
     AuthenticationController.verifyRoleToken('administrateur'),

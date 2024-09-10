@@ -39,6 +39,12 @@ route.post('/cree-pseudo',
     UploadController.singleFileUpload('pseudo'),
     UtilisateurController.creePseudo
 )
+
+route.update('',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    UtilisateurController.modifierProfile
+)
+
 // route.update('/pseudo', UtilisateurController.creePseudo)
 
 route.get('',UtilisateurController.liste)

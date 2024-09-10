@@ -3,6 +3,7 @@ import mysqlPool from "../config/database.js"
 
 import 'dotenv/config'
 import UploadController from "./upload.js"
+import DateFormat from "../utils/date.format.js";
 
 const PINSchemas = z.object({
     id_utilisateur: z.number().int().positive({message:"l'id_utilisateur doit etre positive"}),
@@ -206,17 +207,17 @@ const modifierProfile = (req,res) => {
     const query = `UPDATE utilisateur SET ${updateFields.join(', ')} WHERE id = ?`;
 
     // Execute the query
-    db.query(query, [userId], (err, result) => {
+    mysqlPool.query(query, [userId], (err, result) => {
         if (err) {
             console.error('Error updating user:', err);
             return res.status(500).send('Internal server error');
         }
 
         if (result.affectedRows === 0) {
-            return res.status(404).send('User not found');
+            return res.status(404).send('Utilisateur non trouvé');
         }
 
-        res.send('User updated successfully');
+        res.json({message:'Mise à jour de l\'utilisateur réussie'});
     });
 }
 

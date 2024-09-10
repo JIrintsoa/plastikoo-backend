@@ -136,6 +136,35 @@ const liste = (req,res) => {
     });
 }
 
+const listeCommentaire = (req,res) => {
+    const {id_publication} = req.params
+    const sql = `SELECT commentaire_pub.id AS commentaire_id,
+            commentaire_pub.contenu AS commentaire_contenu,
+            commentaire_pub.date_creation AS commentaire_date_creation,
+            publication.titre AS publication_titre,
+            publication.contenu AS publication_contenu,
+            publication.date_creation AS publication_date_creation,
+            utilisateur.url_profil AS utilisateur_url_profil,
+            utilisateur.pseudo_utilisateur AS utilisateur_pseudo_utilisateur
+        FROM  plastikoo2.commentaire_pub
+        JOIN  plastikoo2.publication
+        ON  commentaire_pub.id_publication = publication.id
+        JOIN  plastikoo2.utilisateur
+        ON   commentaire_pub.id_utilisateur = utilisateur.id
+        WHERE  plastikoo2.commentaire_pub.id_publication = ${id_publication}
+        ORDER BY  commentaire_pub.date_creation DESC;
+`
+    mysqlPool.query(sql,(err,result) => {
+        if (err) {
+            console.error('Erreur data fetched:: \n', err);
+            res.json({error:err.sqlMessage})
+        } else {
+            console.log('Data fetched : \n', result);
+            res.json(result);
+        }
+    });
+}
+
 // ajouter publication
 const publier = async(req,res) => {
     try {
@@ -366,5 +395,6 @@ export default {
     supprimerAdmin,
     reagir,
     commenter,
-    repondreCommentaire
+    repondreCommentaire,
+    listeCommentaire
 }

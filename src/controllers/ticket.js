@@ -68,7 +68,7 @@ class TicketController {
     static utilise = (req, res) => {
         try {
             const {id_ticket} = req.params
-            const query = `UPDATE ticket SET est_utilise = true where id = ${id_ticket}`;
+            const query = `UPDATE ticket SET est_utilise = true, date_utilisation = (select current_timestamp) where id = ${id_ticket}`;
 
             mysqlPoolMachine.query(query, (err, result) => {
                 if (err) {

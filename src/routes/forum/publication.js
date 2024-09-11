@@ -50,15 +50,15 @@ router.get('/commentaire/:id_publication/:id_commentaire',
 )
 
 // valider publication
-router.get('/admin/valider/:id_publication',
-    AuthenticationController.verifyRoleToken('administrateur'),
-    PublicationController.valider
-)
+// router.get('/admin/valider/:id_publication',
+//     AuthenticationController.verifyRoleToken('administrateur'),
+//     PublicationController.valider
+// )
 
-router.get('/admin/valider/:id_publication',
-    AuthenticationController.verifyRoleToken('administrateur'),
-    PublicationController.valider
-)
+// router.get('/admin/valider/:id_publication',
+//     AuthenticationController.verifyRoleToken('administrateur'),
+//     PublicationController.valider
+// )
 
 router.delete('/admin/:id_publication',
     AuthenticationController.verifyRoleToken('administrateur'),

@@ -18,6 +18,7 @@ class TicketController {
         const {id_ticket} = req.params
         const sql = `select
             t.id as id_ticket,
+            t.code_recolte,
             mr.id as id_machine_recolte,
             t.montant,
             t.date_creation,
@@ -37,21 +38,21 @@ class TicketController {
         });
     }
 
-
     static creer = (req, res) => {
         try {
             creerTicketSchemas.parse(req.body)
             const { montant } = req.body;
             const {id_machine_recolte} = req.params
-            const sql = `INSERT INTO ticket (montant, code_recolte, id_machine_recolte) VALUES (?, (select generate_code_recolte()), ?)`;
-
+            // const sql = `INSERT INTO ticket (montant, code_recolte, id_machine_recolte) VALUES (?, (select generate_code_recolte()), ?)`;
+            const sql = `call creerTicket(?,?)`
             mysqlPoolMachine.query(sql, [montant,id_machine_recolte], (err, result) => {
                 if (err) {
                     console.error('Erreur ajout de donnee:', err);
                     res.json({error:err.sqlMessage})
                 } else {
                     console.log('Ticket ajouté avec succès: ', result);
-                    res.json({message: 'Ticket ajouté'});
+                    // res.json({message: 'Ticket ajouté'});
+                    res.json(result[0][0])
                 }
             });
         } catch (error) {

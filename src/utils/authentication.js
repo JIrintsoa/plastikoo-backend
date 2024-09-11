@@ -38,8 +38,6 @@ const signInSchema = z.object({
     password: z.string().min(1, "Le nom d'utilisateur est requis")
 });
 
-
-
 // console.log(BCRYPT_SALT_ROUNDS)
 class AuthenticationController {
 

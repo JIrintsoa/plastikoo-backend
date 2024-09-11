@@ -9,6 +9,7 @@ import UtilisateurRoutes from "./routes/utilisateur.js"
 import BonAchatRoutes from "./routes/bonAchat.js";
 import PublicationRoutes from "./routes/forum/publication.js"
 import UploadFileRoutes from "./routes/upload.js"
+import TicketRoutes from "./routes/ticket.js"
 
 // Import routes with JWT
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
@@ -42,6 +43,8 @@ app.use('/bon-achat', BonAchatRoutes)
 app.use('/forum/publication', PublicationRoutes)
 
 app.use('/upload',UploadFileRoutes)
+
+app.use('/ticket',TicketRoutes)
 
 // API with JWT token
 app.use('/jwt/transaction', TransactionRoutesJWT)

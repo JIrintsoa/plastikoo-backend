@@ -32,7 +32,7 @@ const recolteSchema = z.object({
     montant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
     id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
     code_recolte: z.string().min(1,{message:"le code doit contenir 6 chiffres"}),
-    id_machine_recolte: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
+    id_machine_recolte: z.number().nonnegative({message: "id_machine_recolte doit etre positif"}),
 })
 
 const retrait = (req,res) => {

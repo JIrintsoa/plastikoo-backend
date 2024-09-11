@@ -138,28 +138,42 @@ const liste = (req,res) => {
 
 const listeCommentaire = (req,res) => {
     const {id_publication} = req.params
-    const sql = `SELECT commentaire_pub.id AS commentaire_id,
-            commentaire_pub.contenu AS commentaire_contenu,
-            commentaire_pub.date_creation AS commentaire_date_creation,
-            publication.titre AS publication_titre,
-            publication.contenu AS publication_contenu,
-            publication.date_creation AS publication_date_creation,
-            utilisateur.url_profil AS utilisateur_url_profil,
-            utilisateur.pseudo_utilisateur AS utilisateur_pseudo_utilisateur
-        FROM  plastikoo2.commentaire_pub
-        JOIN  plastikoo2.publication
-        ON  commentaire_pub.id_publication = publication.id
-        JOIN  plastikoo2.utilisateur
-        ON   commentaire_pub.id_utilisateur = utilisateur.id
-        WHERE  plastikoo2.commentaire_pub.id_publication = ${id_publication}
-        ORDER BY  commentaire_pub.date_creation DESC;
+    const sql = `SELECT 
+            c.id AS commentaire_id,
+            c.contenu AS commentaire_contenu,
+            c.date_creation AS commentaire_date_creation,
+            p.titre AS publication_titre,
+            p.contenu AS publication_contenu,
+            p.date_creation AS publication_date_creation,
+            u.url_profil AS utilisateur_url_profil,
+            u.pseudo_utilisateur AS utilisateur_pseudo_utilisateur,
+            COUNT(responses.id) AS nbr_reponse
+        FROM
+            plastikoo2.commentaire_pub AS c
+        JOIN 
+            plastikoo2.publication AS p
+            ON c.id_publication = p.id
+        JOIN 
+            plastikoo2.utilisateur AS u
+            ON c.id_utilisateur = u.id
+        LEFT JOIN 
+            plastikoo2.commentaire_pub AS responses
+            ON responses.id_main_commentaire = c.id
+        WHERE 
+            c.id_publication = ${id_publication}
+        GROUP BY 
+            c.id, c.contenu, c.date_creation, 
+            p.titre, p.contenu, p.date_creation,
+            u.url_profil, u.pseudo_utilisateur
+        ORDER BY 
+            c.date_creation DESC;
 `
     mysqlPool.query(sql,(err,result) => {
         if (err) {
             console.error('Erreur data fetched:: \n', err);
             res.json({error:err.sqlMessage})
         } else {
-            console.log('Data fetched : \n', result);
+            // console.log('Data fetched : \n', result);
             res.json(result);
         }
     });

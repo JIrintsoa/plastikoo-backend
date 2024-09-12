@@ -7,12 +7,12 @@ import UploadController from "../controllers/upload.js";
 
 const route =  Router()
 
-route.post('/cree-code-pin',async (req,res) => {
+route.post('/cree-code-pin',AuthenticationController.verifyRoleToken('utilisateur'),async (req,res) => {
     await UtilisateurController.creeCodePIN(req,res)
     // console.log('cree code pin')
 })
 
-route.post('/use-code-pin',async(req,res)=>{
+route.post('/use-code-pin',AuthenticationController.verifyRoleToken('utilisateur'), async(req,res)=>{
     await UtilisateurController.verifierCodePIN(req,res)
 })
 

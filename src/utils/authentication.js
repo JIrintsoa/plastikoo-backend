@@ -134,16 +134,14 @@ class AuthenticationController {
             const { username, password } = req.body;
 
             // SQL query to get the user data including the hashed password
-            const sql = `
-                SELECT
+            const sql = `SELECT
                     email,
                     CONCAT(nom, ' ', prenom) as nom_complet,
                     pseudo_utilisateur,
                     id ,
                     mot_de_passe
                 FROM utilisateur
-                WHERE email = ? OR pseudo_utilisateur = ?
-            `;
+                WHERE email = ? OR pseudo_utilisateur = ?`;
 
             // Values for the query
             const values = [username, username];
@@ -166,26 +164,29 @@ class AuthenticationController {
                             // console.log(token)
                             // res.json({ user, token });
                             // Password matched
-                            let pseudo = user.pseudo_utilisateur
-                            if(user.pseudo_utilisateur == null){
-                                pseudo = user.nom_complet
-                            }
-                            const userData = {
-                                "id_utilisateur":user.id,
-                                "pseudo_utilisateur": pseudo,
-                                "nom_complet": user.nom_complet
-                            }
+                            // let pseudo = user.pseudo_utilisateur
+                            // if(user.pseudo_utilisateur == null){
+                            //     pseudo = user.nom_complet
+                            // }
+                            // const userData = {
+                            //     "id_utilisateur":user.id,
+                            //     "pseudo_utilisateur": pseudo,
+                            //     "nom_complet": user.nom_complet
+                            // }
                             // console.log("Here is the data after loged:\n",{
                             //     "id_utilisateur":user.id,
                             //     "pseudo_utilisateur": pseudo,
                             //     "nom_complet": user.nom_complet
                             // })
+                            // const token = await JwtUtils.generateToken({
+                            //     "id_utilisateur":user.id,
+                            //     "pseudo_utilisateur": pseudo,
+                            //     "nom_complet": user.nom_complet
+                            // });
                             const token = await JwtUtils.generateToken({
-                                "id_utilisateur":user.id,
-                                "pseudo_utilisateur": pseudo,
-                                "nom_complet": user.nom_complet
+                                "id_utilisateur":user.id
                             });
-                            res.status(200).json({userData,token});
+                            res.status(200).json({token});
                         } else {
                             // Password did not match
                             res.status(401).json({ error: { password: 'Votre mot de passe est incorrect' } });
@@ -215,46 +216,106 @@ class AuthenticationController {
         }
     }
 
-    static sInscrire = async (req,res)=>{
+    // Refactor function with promise-based approach
+    static sInscrire = async (req, res) => {
+        let connection;
         try {
-
-            signUpSchema.parse(req.body)
-
+            // Validate request body using Zod
+            signUpSchema.parse(req.body);
+    
             const { email, mdp, nom, prenom, date_naissance } = req.body;
-            // console.log(req.body)
-
+    
+            // Hash the password
             const salt = bcrypt.genSaltSync(Number(BCRYPT_SALT_ROUNDS));
             const hashMdp = bcrypt.hashSync(mdp, salt);
-            // const hashMdp = hashMdp(mdp)
+    
+            // Get a connection from the pool wrapped in a Promise
+            connection = await new Promise((resolve, reject) => {
+                mysqlPool.getConnection((err, conn) => {
+                    if (err) return reject(err);
+                    resolve(conn);
+                });
+            });
+    
+            // Begin transaction
+            await new Promise((resolve, reject) => {
+                connection.beginTransaction((err) => {
+                    if (err) {
+                        connection.release();
+                        return reject(err);
+                    }
+                    resolve();
+                });
+            });
+    
+            // Execute the query with promises
+            const sql = 'CALL inscrireUtilisateur (?, ?, ?, ?, ?)';
+            const result = await new Promise((resolve, reject) => {
+                connection.query(sql, [nom, prenom, email, hashMdp, date_naissance], (err, results) => {
+                    if (err) {
+                        res.json({error:err.sqlMessage})
+                        return reject(err);
+                    }
+                    resolve(results);
+                });
+            });
+            // Assuming the stored procedure returns the user's ID
+            const userId = result[0][0] // Adjust based on your stored procedure result
+            console.log(userId)
+            // const tokenPayload = { id: userId };
+            const tokenPayload = userId;
 
-    //         const sql = `INSERT INTO utilisateur
-	// ( nom, prenom, email, mot_de_passe, date_naissance ) VALUES ( ?, ?, ?, ?, ? )`
-            const sql = `call inscrireUtilisateur (?, ?, ?, ?, ?)`
-            mysqlPool.query(sql,[nom,prenom,email,hashMdp,date_naissance],(err,result)=>{
-                if (err) {
-                    console.error('Erreur insertion de donnnee:\n', err);
-                    res.json({error:err.sqlMessage})
-                } else {
-                    console.log('Insertion avec succes: ', result);
-                    res.json({message: 'Votre compte plastikoo a bien ete crée'});
-                }
-            })
+            // Generate JWT token
+            const token = await JwtUtils.generateToken(tokenPayload);
+    
+            // Commit the transaction
+            await new Promise((resolve, reject) => {
+                connection.commit((err) => {
+                    if (err) {
+                        res.json({error:err.sqlMessage})
+                        return reject(err);
+                    }
+                    resolve();
+                });
+            });
+    
+            console.log('Insertion réussie et jeton généré:', result);
+    
+            // Send success message and token
+            res.status(201).json({
+                message: "Votre compte Plastikoo a bien été créé.",
+                token: token
+            });
+    
         } catch (error) {
+            if (connection) {
+                // Rollback the transaction in case of error
+                await new Promise((resolve, reject) => {
+                    connection.rollback(() => {
+                        connection.release();
+                        resolve();
+                    });
+                });
+            }
+    
             if (error instanceof ZodError) {
-                // Map the validation errors to the corresponding fields
                 const validationErrors = error.errors.reduce((acc, err) => {
                     acc[err.path[0]] = err.message;
                     return acc;
                 }, {});
-                // Return the validation errors in the desired format
-                res.status(400).json({ error: validationErrors });
+                return res.status(400).json({ error: validationErrors });
             } else {
-                console.error(error); // Log the unexpected error for debugging
-                res.status(500).json({ error: 'Internal Server Error' });
+                console.error("Erreur inattendue:", error);
+                return res.status(500).json({ error: "Erreur interne du serveur." });
+            }
+        } finally {
+            if (connection) {
+                // Release the connection back to the pool
+                connection.release();
             }
         }
-    }
-
+    };
+    
     static verifyRoleToken = (requiredRole) => {
         return async (req, res, next) => {
             try {

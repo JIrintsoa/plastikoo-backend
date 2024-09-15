@@ -40,9 +40,19 @@ route.post('/cree-pseudo',
     UtilisateurController.creePseudo
 )
 
+route.get('',
+    AuthenticationController.verifyRoleToken('administrateur'),
+    UtilisateurController.liste
+)
+
 route.put('',
     AuthenticationController.verifyRoleToken('utilisateur'),
     UtilisateurController.modifierProfile
+)
+
+route.get('/infos',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    UtilisateurController.infos
 )
 
 // route.update('/pseudo', UtilisateurController.creePseudo)

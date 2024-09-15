@@ -175,7 +175,14 @@ const creePseudo = (req,res) => {
 }
 
 const liste = (req,res) =>{
-    const sql = ` SELECT * FROM utilisateur`
+    const sql = ` SELECT
+    id,
+    nom,
+    email,
+    prenom,
+    date_naissance,
+    solde
+    FROM utilisateur`
     mysqlPool.query(sql,(err,result)=>{
         if (err) {
             console.error('Erreur de fetch des utilisateur: ', err);
@@ -201,7 +208,7 @@ const modifierProfile = (req,res) => {
     if (date_naissance) updateFields.push(`date_naissance = '${date_naissance}'`);
 
     if (updateFields.length === 0) {
-        return res.status(400).send('No fields to update');
+        return res.status(400).send('Aucun champs à modifier');
     }
 
     const query = `UPDATE utilisateur SET ${updateFields.join(', ')} WHERE id = ?`;
@@ -221,11 +228,44 @@ const modifierProfile = (req,res) => {
     });
 }
 
+const infos = (req,res) => {
+    const {id_utilisateur} = req.utilisateur
+    const sql = ` SELECT
+    id,
+    nom,
+    email,
+    prenom,
+    date_naissance,
+    img_profil,
+    solde
+    FROM utilisateur where id = ${id_utilisateur}`
+
+    mysqlPool.query(sql, [id_utilisateur], (err, result) => {
+        if (err) {
+            console.error('Erreur lors de la récupération de l\'utilisateur: ', err);
+            return res.status(500).json({
+                error: err.sqlMessage
+            });
+        }
+
+        if (result.length === 0) {
+            // Handle case where no user is found
+            return res.status(404).json({
+                error: 'Utilisateur non trouvé',
+            });
+        }
+
+        console.log('Utilisateur récupérée avec succès: ', result);
+        return res.status(200).json(result);
+    });
+}
+
 export default {
     creeCodePIN,
     verifierCodePIN,
     verifierSolde,
     creePseudo,
     liste,
+    infos,
     modifierProfile
 }

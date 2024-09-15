@@ -10,7 +10,7 @@ const router = Router()
 
 const MB = 5;
 
-const maxSize = 5 * 1024 * 1024; // 5 MB in bytes
+const maxSize = 5 * 1024 * 1024;
 
 router.post('/single', UploadController.singleFileUpload);
 

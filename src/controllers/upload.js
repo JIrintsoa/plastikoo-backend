@@ -1,5 +1,3 @@
-// ../controller/upload.js
-
 import uploadUtils from '../utils/upload.file.js';
 
 const { upload, MBsize, isValidFile } = uploadUtils

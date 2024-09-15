@@ -1,11 +1,12 @@
 import express from "express";
 import bodyParser from "body-parser";
-import ContactRoutes from "./routes/contact.js"
-import StockRoutes from "./routes/stock.js"
-import PtypeRoutes from "./routes/pType.js"
-import TransactionRoutes from "./routes/transaction.js"
-import PartenaireRoutes from "./routes/partenaire.js"
-import UtilisateurRoutes from "./routes/utilisateur.js"
+import path from "path"; // Importation du module path pour gérer les chemins
+import ContactRoutes from "./routes/contact.js";
+import StockRoutes from "./routes/stock.js";
+import PtypeRoutes from "./routes/pType.js";
+import TransactionRoutes from "./routes/transaction.js";
+import PartenaireRoutes from "./routes/partenaire.js";
+import UtilisateurRoutes from "./routes/utilisateur.js";
 import BonAchatRoutes from "./routes/bonAchat.js";
 import PublicationRoutes from "./routes/forum/publication.js"
 import UploadFileRoutes from "./routes/upload.js"
@@ -29,6 +30,7 @@ const io = new Server(server, {
     },
 });
 
+app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
 app.use(express.json());
 app.use(bodyParser.json())
 
@@ -63,12 +65,9 @@ app.use('/jwt/transaction', TransactionRoutesJWT)
 
 app.use('/jwt/utilisateur', UtilisateurRoutes)
 
-// app.listen(5000, () => {
-//     console.log(`App running on http://localhost:5000`)
-// })
-
+// Démarrer le serveur
 app.listen(port, host, () => {
-    console.log(`App running on http://${host}:${port}`);
+  console.log(`App running on http://${host}:${port}`);
 });
 
 io.on('connection', (socket) => {

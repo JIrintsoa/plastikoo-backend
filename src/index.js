@@ -13,17 +13,29 @@ import TicketRoutes from "./routes/ticket.js"
 
 // Import routes with JWT
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
-import AuthenticationController from "./utils/authentication.js";
 import 'dotenv/config'
 
+
+import { Server } from "socket.io";
+import http from "http"
 const host = process.env.DEV_HOST
 const port = process.env.DEV_PORT
 
 const app = express()
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*', // Adjust this to match your front-end origin
+    },
+});
 
 app.use(express.json());
 app.use(bodyParser.json())
 
+app.use((req, res, next) => {
+    req.io = io; // Attach Socket.io instance to req object
+    next();
+});
 
 // middlewares
 app.use('/contact', ContactRoutes);
@@ -58,3 +70,11 @@ app.use('/jwt/utilisateur', UtilisateurRoutes)
 app.listen(port, host, () => {
     console.log(`App running on http://${host}:${port}`);
 });
+
+io.on('connection', (socket) => {
+    console.log('Un utilisateur connecte');
+
+    socket.on('disconnect', () => {
+        console.log('Un utilisateur est deconnecte');
+    });
+})

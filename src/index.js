@@ -10,7 +10,6 @@ import UtilisateurRoutes from "./routes/utilisateur.js";
 import BonAchatRoutes from "./routes/bonAchat.js";
 import PublicationRoutes from "./routes/forum/publication.js";
 import UploadFileRoutes from "./routes/upload.js";
-// Import routes with JWT
 import TransactionRoutesJWT from "./routes/withJWT/transactions.js";
 import "dotenv/config";
 

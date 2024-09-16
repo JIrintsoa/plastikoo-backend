@@ -11,6 +11,7 @@ import BonAchatRoutes from "./routes/bonAchat.js";
 import PublicationRoutes from "./routes/forum/publication.js"
 import UploadFileRoutes from "./routes/upload.js"
 import TicketRoutes from "./routes/ticket.js"
+import MachineRecolteRoutes from "./routes/machine.recolte.js"
 
 // Import routes with JWT
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
@@ -60,6 +61,8 @@ app.use('/upload',UploadFileRoutes)
 
 app.use('/ticket',TicketRoutes)
 
+app.use('/machine',MachineRecolteRoutes)
+
 // API with JWT token
 app.use('/jwt/transaction', TransactionRoutesJWT)
 
@@ -67,7 +70,7 @@ app.use('/jwt/utilisateur', UtilisateurRoutes)
 
 // Démarrer le serveur
 app.listen(port, host, () => {
-  console.log(`App running on http://${host}:${port}`);
+   console.log(`App running on http://${host}:${port}`);
 });
 
 io.on('connection', (socket) => {

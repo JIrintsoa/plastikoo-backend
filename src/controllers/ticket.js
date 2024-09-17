@@ -14,11 +14,10 @@ const creerTicketSchemas = z.object({
 
 class TicketController {
 
-    static infos = (req,res) => {
+    static infos = (req,res, next) => {
         const {id_ticket} = req.params
         const sql = `select
             t.id as id_ticket,
-            t.code_recolte,
             mr.id as id_machine_recolte,
             t.montant,
             t.date_creation,
@@ -33,9 +32,21 @@ class TicketController {
                 res.json({error:err.sqlMessage})
             } else {
                 console.log('infos ticket: \n', result);
-                res.json(result);
+                req.ticket = result[0]
+                next()
+                // res.json(result);
             }
         });
+        
+    }
+
+    static afficher = (req,res) => {
+        // console.log(req.ticket)
+        if(!req.ticket) {
+            res.json({error:"Aucun ticket passer dans la requete"})
+        }
+        // Render the EJS template with ticket data and service fee
+        res.render('ticket', { ticket: req.ticket, serviceFee: 0.20 });
     }
 
     static creer = (req, res) => {

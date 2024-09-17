@@ -46,7 +46,11 @@ router.post('/commenter/:id_publication',
 // commenter un commentaire
 router.post('/commentaire/repondre/:id_publication/:id_commentaire',
     AuthenticationController.verifyRoleToken('utilisateur'),
-    PublicationController.repondreCommentaire
+    (req,res) => {
+        const io = req.io
+        const reponseCommentaire = PublicationController.repondreCommentaire(io)
+        reponseCommentaire(req,res)
+    }
 )
 
 router.get('/commentaire/:id_publication',

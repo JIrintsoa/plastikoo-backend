@@ -242,6 +242,7 @@ class AuthenticationController {
                 connection.beginTransaction((err) => {
                     if (err) {
                         connection.release();
+                        res.json({error:err.message})
                         return reject(err);
                     }
                     resolve();
@@ -315,7 +316,7 @@ class AuthenticationController {
             }
         }
     };
-    
+
     static verifyRoleToken = (requiredRole) => {
         return async (req, res, next) => {
             try {
@@ -361,7 +362,7 @@ class AuthenticationController {
     };
 
     static logOut = async(req,res) =>{
-    
+
     }
 
     static googleAuth = Passport.authenticate('google', { scope: ['profile', 'email'] });

@@ -1,0 +1,88 @@
+<!-- src/views/ticket.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Information</title>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/coolvetica-2');
+        body {
+            font-family: Montserrat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #FFFFFF;
+        }
+        .phrase {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .remerciement{
+            font-size: 12px;
+            font-weight: Medium;
+        }
+        .ticket-info {
+            text-align: center;
+            padding: 20px;
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+            max-width: 350px;
+            width: 100%;
+        }
+        .ticket-info h1 {
+            font-size: 24px;
+            color: #00D45F;
+        }
+        .ticket-info p {
+            margin: 10px 0;
+        }
+        .ticket-info .amount {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00D45F;
+        }
+        .ticket-info .recompense {
+            font-family: 'Coolvetica', sans-serif;
+            color: #5995FF;
+            font-size: 18px;
+        }
+        .ticket-info .place {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3A3A3A;
+        }
+        .ticket-info .ceilling-proposition {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00D45F;
+        }
+        .ticket-info button {
+            background-color: #00D45F;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .ticket-info button:hover {
+            background-color: #00c559;
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket-info">
+        <p class="phrase">Vous avez gagner un gains de :</p>
+        <p class="amount"><%= ticket.montant %> ar</p>
+        <p class="recompense">en récompense</p>
+        <p class="phrase">à</p>
+        <p class="place"><%= ticket.lieu %></p>
+        <p class="remerciement">Merci pour votre contribution, votre participation a sauvé notre planète de la pollution des plastiques.</p>
+        <button>Ok</button>
+    </div>
+</body>
+</html>

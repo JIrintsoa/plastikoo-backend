@@ -25,7 +25,11 @@ router.delete('/:id_publication',
 
 router.get ('/reagir/:id_publication',
     AuthenticationController.verifyRoleToken('utilisateur'),
-    PublicationController.reagir
+    (req, res) => {
+        const io = req.io; // Get the io instance from the request object
+        const reagir = PublicationController.reagir(io); // Pass the io instance to the controller
+        reagir(req, res); // Call the commenter function
+    }
 )
 
 //commenter publication

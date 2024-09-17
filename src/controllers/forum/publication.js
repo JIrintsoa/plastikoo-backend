@@ -6,6 +6,7 @@ import 'dotenv/config'
 
 const fc_socket_commentaire = process.env.SOCKET_IO_COMMENTAIRE
 const fc_socket_reponse_commentaire = process.env.SOCKET_IO_REPONSE_COMMENTAIRE
+const fc_socket_reaction = process.env.SOCKET_IO_REACTION
 
 const forumSchemas = z.object({
     titre: z.string().min(1,{message:"Veuillez ajouter un titre"}),
@@ -360,7 +361,7 @@ const supprimerAdmin = async (req,res) => {
 }
 
 // reagir a une publication
-const reagir = async (req,res) => {
+const reagir = (io) => async (req,res) => {
     try {
         const {id_publication} = req.params
         const {id_utilisateur} = req.utilisateur
@@ -371,8 +372,14 @@ const reagir = async (req,res) => {
                 res.status(401).json({error:err.message})
             }
             else {
-                console.log(result)
-                res.status(200).json({message:"La publication a été réagi"})
+                const est_utilise = result[0][0].est_utilise
+                console.log(result[0])
+                io.emit(fc_socket_reaction, {
+                    id_publication,
+                    id_utilisateur,
+                    est_utilise
+                });
+                res.status(200).json({message:"La publication a été réagi",data:result[0][0]})
             }
         })
     } catch (error) {

@@ -2,6 +2,11 @@ import { z,ZodError } from "zod";
 import mysqlPool from "../../config/database.js";
 import UploadController from "../upload.js";
 
+import 'dotenv/config'
+
+const fc_socket_commentaire = process.env.SOCKET_IO_COMMENTAIRE
+const fc_socket_reponse_commentaire = process.env.SOCKET_IO_REPONSE_COMMENTAIRE
+
 const forumSchemas = z.object({
     titre: z.string().min(1,{message:"Veuillez ajouter un titre"}),
     contenu: z.string().min(1,{message:"Veuillez ajouter du contenu"}),
@@ -145,8 +150,8 @@ const listeCommentaire = (req,res) => {
             p.titre AS publication_titre,
             p.contenu AS publication_contenu,
             p.date_creation AS publication_date_creation,
-            u.url_profil AS utilisateur_url_profil,
-            u.pseudo_utilisateur AS utilisateur_pseudo_utilisateur,
+            u.img_profil AS img_utilisateur,
+            u.pseudo_utilisateur AS pseudo_utilisateur,
             COUNT(responses.id) AS nbr_reponse
         FROM
             plastikoo2.commentaire_pub AS c
@@ -168,6 +173,7 @@ const listeCommentaire = (req,res) => {
         ORDER BY 
             c.date_creation DESC;
 `
+
     mysqlPool.query(sql,(err,result) => {
         if (err) {
             console.error('Erreur data fetched:: \n', err);
@@ -429,7 +435,7 @@ const commenter = (io) => async (req, res) => {
         console.log('Commentaire créé avec succès:', result);
 
         // Emit the new comment event via Socket.io after successful insert
-        io.emit('commentaire-publication', {
+        io.emit(fc_socket_commentaire, {
             id_publication,
             id_utilisateur,
             contenu,
@@ -471,35 +477,109 @@ const commenter = (io) => async (req, res) => {
     }
 };
 
-const repondreCommentaire = async (req,res) => {
+
+const repondreCommentaire = (io) => async (req, res) => {
+    let connection;
     try {
-        commentaireSchemas.parse(req.body)
+        // Validate request body using Zod schema
+        commentaireSchemas.parse(req.body);
 
-        const {id_publication, id_commentaire} = req.params
-        const {id_utilisateur} = req.utilisateur
-        const {contenu} = req.body
+        const { id_publication, id_commentaire } = req.params;
+        const { id_utilisateur } = req.utilisateur;
+        const { contenu } = req.body;
 
-        const sql = `INSERT INTO commentaire_pub (contenu, id_utilisateur, id_publication,id_main_commentaire) VALUES (?, ?, ?,?)`
-        mysqlPool.query(sql,[contenu,id_utilisateur,id_publication,id_commentaire],(err,result) => {
-            if (err) {
-                console.error('Erreur commentaire publication :: ', err);
-                res.json({error:err.sqlMessage})
-            } else {
-                console.log('Commentaire created succesfully:', result);
-                res.json({message:"Votre commentaire a bien été crée"});
-            }
+        // Get a connection from the pool
+        connection = await new Promise((resolve, reject) => {
+            mysqlPool.getConnection((err, conn) => {
+                if (err) {
+                    res.json({error:err.message})
+                    return reject(new Error("Erreur lors de la connexion à la base de données"));
+                }
+                resolve(conn);
+            });
         });
+
+        // Begin transaction
+        await new Promise((resolve, reject) => {
+            connection.beginTransaction((err) => {
+                if (err) {
+                    res.json({error:err.message})
+                    connection.release();
+                    return reject(new Error("Erreur lors du début de la transaction"));
+                }
+                resolve();
+            });
+        });
+
+        // SQL query to insert the reply to a comment
+        const sql = `INSERT INTO commentaire_pub (contenu, id_utilisateur, id_publication, id_main_commentaire) VALUES (?, ?, ?, ?)`;
+        const result = await new Promise((resolve, reject) => {
+            connection.query(sql, [contenu, id_utilisateur, id_publication, id_commentaire], (err, results) => {
+                if (err) {
+                    res.json({error:err.message})
+                    return reject(new Error("Erreur lors de l'insertion du commentaire"));
+                }
+                resolve(results);
+            });
+        });
+
+        // Commit the transaction
+        await new Promise((resolve, reject) => {
+            connection.commit((err) => {
+                if (err) {
+                    res.json({error:err.message})
+                    return reject(new Error("Erreur lors de la validation de la transaction"));
+                }
+                resolve();
+            });
+        });
+
+        console.log('Commentaire créé avec succès: \n', result);
+
+        // Emit the new comment reply event via Socket.io after successful insert
+        io.emit(fc_socket_reponse_commentaire, {
+            id_publication,
+            id_utilisateur,
+            contenu,
+            id_main_commentaire: id_commentaire,
+            id_commentaire: result.insertId // Include the new comment's ID in the emitted event
+        });
+
+        // Send success message
+        res.json({ message: "Votre réponse au commentaire a bien été créée" });
+
     } catch (error) {
+        if (connection) {
+            // Rollback the transaction in case of error
+            await new Promise((resolve) => {
+                connection.rollback(() => {
+                    connection.release();
+                    resolve();
+                });
+            });
+        }
+
+        // Determine the error message to send based on the error type
+        let errorMessage = "Erreur interne du serveur";
+        if (error.message) {
+            errorMessage = error.message;
+        }
+
         if (error instanceof ZodError) {
             const validationErrors = error.errors.map(err => err.message).join(', ');
-            console.error(error)
-            res.status(400).json({ error: validationErrors });
+            return res.status(400).json({ error: validationErrors });
         } else {
-            console.error(error); // Log the unexpected error for debugging
-            res.status(500).json({ error: 'Internal Server Error' });
+            console.error("Erreur inattendue:", error);
+            return res.status(500).json({ error: errorMessage });
+        }
+    } finally {
+        if (connection) {
+            // Release the connection back to the pool
+            connection.release();
         }
     }
-}
+};
+
 
 export default {
     liste,

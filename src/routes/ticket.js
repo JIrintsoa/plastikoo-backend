@@ -3,7 +3,10 @@ import TicketController from "../controllers/ticket.js";
 
 const route = Router()
 
-route.get('/:id_ticket',TicketController.infos)
+route.get('/:id_ticket',
+    TicketController.infos,
+    TicketController.afficher
+)
 
 // route.get('/')
 

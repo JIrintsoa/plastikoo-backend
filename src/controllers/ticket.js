@@ -14,7 +14,7 @@ const creerTicketSchemas = z.object({
 
 class TicketController {
 
-    static infos = (req,res, next) => {
+    static infos = (req,res) => {
         const {id_ticket} = req.params
         const sql = `select
             t.id as id_ticket,
@@ -32,9 +32,9 @@ class TicketController {
                 res.json({error:err.sqlMessage})
             } else {
                 console.log('infos ticket: \n', result);
-                req.ticket = result[0]
-                next()
-                // res.json(result);
+                // req.ticket = result[0]
+                // next()
+                res.json(result);
             }
         });
         

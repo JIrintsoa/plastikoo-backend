@@ -7,10 +7,9 @@ const route = Router()
 
 route.get('/:id_ticket',
     AuthenticationController.verifyRoleToken('utilisateur'),
-    TicketController.infos,
-    TicketController.afficher,
     TransactionController.recolte,
-    TicketController.utilise
+    TicketController.utilise,
+    TicketController.infos,
 )
 
 // route.get('/')

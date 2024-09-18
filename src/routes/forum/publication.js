@@ -25,7 +25,11 @@ router.delete('/:id_publication',
 
 router.get ('/reagir/:id_publication',
     AuthenticationController.verifyRoleToken('utilisateur'),
-    PublicationController.reagir
+    (req, res) => {
+        const io = req.io; // Get the io instance from the request object
+        const reagir = PublicationController.reagir(io); // Pass the io instance to the controller
+        reagir(req, res); // Call the commenter function
+    }
 )
 
 //commenter publication
@@ -46,7 +50,11 @@ router.post('/commenter/:id_publication',
 // commenter un commentaire
 router.post('/commentaire/repondre/:id_publication/:id_commentaire',
     AuthenticationController.verifyRoleToken('utilisateur'),
-    PublicationController.repondreCommentaire
+    (req,res) => {
+        const io = req.io
+        const reponseCommentaire = PublicationController.repondreCommentaire(io)
+        reponseCommentaire(req,res)
+    }
 )
 
 router.get('/commentaire/:id_publication',

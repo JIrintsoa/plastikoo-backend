@@ -235,6 +235,7 @@ const infos = (req,res) => {
     nom,
     email,
     prenom,
+    pseudo_utilisateur as pseudo,
     date_naissance,
     img_profil,
     solde

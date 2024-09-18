@@ -10,6 +10,8 @@ router.get('',AuthenticationController.verifyRoleToken('utilisateur') ,transacti
 // Recolte
 router.post('/recolte', AuthenticationController.verifyRoleToken('utilisateur'),transactionController.recolte)
 
+router.get('/recolte/:id_ticket', AuthenticationController.verifyRoleToken('utilisateur'),transactionController.recolte)
+
 // Details du retrait a faire
 router.get('/retrait/:id_service',AuthenticationController.verifyRoleToken('utilisateur'),transactionController.infosRetrait)
 

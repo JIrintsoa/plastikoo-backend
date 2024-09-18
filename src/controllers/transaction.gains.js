@@ -32,7 +32,7 @@ const recolteSchema = z.object({
     montant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),
     id_utilisateur: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
     code_recolte: z.string().min(1,{message:"le code doit contenir 6 chiffres"}),
-    id_machine_recolte: z.number().nonnegative({message: "id_utilisateur doit etre positif"}),
+    id_machine_recolte: z.number().nonnegative({message: "id_machine_recolte doit etre positif"}),
 })
 
 const retrait = (req,res) => {
@@ -111,7 +111,7 @@ const infosRetrait = (req,res) =>{
     })
 }
 
-async function recolte(req, res) {
+async function recolteV1(req, res) {
     try {
         // const {id_utilisateur} = req.utilisateur
         const form = recolteSchema.parse({
@@ -133,6 +133,46 @@ async function recolte(req, res) {
                 res.json({error:err.sqlMessage})
             } else {
                 console.log('Data inserted successfully:', result);
+                res.json({message: `Votre avez obtenu un gain de ${montant}Ar`});
+            }
+        })
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const validationErrors = error.errors.map(err => err.message).join(', ');
+            res.status(400).json({ error: validationErrors });
+        } else {
+            console.error(error); // Log the unexpected error for debugging
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+}
+
+const recolte = (req,res) => {
+    try {
+        const {id_ticket} = req.params
+        const {id_utilisateur} = req.utilisateur
+        // const {id_utilisateur} = req.utilisateur
+        // const form = recolteSchema.parse({
+        //     montant: req.body.montant,
+        //     id_utilisateur: req.utilisateur.id_utilisateur,
+        //     id_machine_recolte: req.body.id_machine_recolte,
+        //     code_recolte:req.body.code_recolte
+        // })
+        // const {
+        //     montant,
+        //     id_utilisateur,
+        //     id_machine_recolte,
+        //     code_recolte
+        // }= form;
+        const sql = `CALL recolte_ticket(?,?)`
+        // const sql = `CALL recolte_ticket(?,?,?,?)`
+        mysqlPool.query(sql,[id_ticket,id_utilisateur],(err,result)=>{
+            if (err) {
+                console.error('Erreur insertion de donnee:', err);
+                res.json({error:err.sqlMessage})
+            } else {
+                const montant = result[0][0].gains
+                console.log('Data inserted successfully:', montant);
                 res.json({message: `Votre avez obtenu un gain de ${montant}Ar`});
             }
         })

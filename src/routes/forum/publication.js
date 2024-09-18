@@ -11,6 +11,7 @@ router.get('',
     PublicationController.liste
 )
 
+
 // Poster une publication
 router.post('',
     AuthenticationController.verifyRoleToken('utilisateur'),
@@ -28,10 +29,19 @@ router.get ('/reagir/:id_publication',
 )
 
 //commenter publication
+// router.post('/commenter/:id_publication',
+//     AuthenticationController.verifyRoleToken('utilisateur'),
+//     PublicationController.commenter
+// )
+
 router.post('/commenter/:id_publication',
     AuthenticationController.verifyRoleToken('utilisateur'),
-    PublicationController.commenter
-)
+    (req, res) => {
+      const io = req.io; // Get the io instance from the request object
+      const commenter = PublicationController.commenter(io); // Pass the io instance to the controller
+      commenter(req, res); // Call the commenter function
+    }
+);
 
 // commenter un commentaire
 router.post('/commentaire/repondre/:id_publication/:id_commentaire',
@@ -50,15 +60,15 @@ router.get('/commentaire/:id_publication/:id_commentaire',
 )
 
 // valider publication
-router.get('/admin/valider/:id_publication',
-    AuthenticationController.verifyRoleToken('administrateur'),
-    PublicationController.valider
-)
+// router.get('/admin/valider/:id_publication',
+//     AuthenticationController.verifyRoleToken('administrateur'),
+//     PublicationController.valider
+// )
 
-router.get('/admin/valider/:id_publication',
-    AuthenticationController.verifyRoleToken('administrateur'),
-    PublicationController.valider
-)
+// router.get('/admin/valider/:id_publication',
+//     AuthenticationController.verifyRoleToken('administrateur'),
+//     PublicationController.valider
+// )
 
 router.delete('/admin/:id_publication',
     AuthenticationController.verifyRoleToken('administrateur'),

@@ -79,12 +79,12 @@ app.use('/jwt/transaction', TransactionRoutesJWT)
 app.use('/jwt/utilisateur', UtilisateurRoutes)
 
 // Serveur version local
-// app.listen(port, host, () => {
-//    console.log(`App running on http://${host}:${port}`);
-// });
+app.listen(port, host, () => {
+   console.log(`App running on http://${host}:${port}`);
+});
 
 // Serveur version prod
-module.exports.handler = ServerlessHttp(app)
+// module.exports.handler = ServerlessHttp(app)
 
 io.on('connection', (socket) => {
     console.log('Un utilisateur connecte');

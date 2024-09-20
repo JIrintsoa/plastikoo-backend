@@ -50,6 +50,10 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get('/hello',(req,res) => {
+    res.send(`hello world`)
+})
+
 // middlewares
 app.use('/contact', ContactRoutes);
 

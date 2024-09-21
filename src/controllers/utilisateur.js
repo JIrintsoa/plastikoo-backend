@@ -261,6 +261,60 @@ const infos = (req,res) => {
     });
 }
 
+const mdpOublie = (req, res) => {
+    const { email } = req.body;
+  
+    // Check if the user exists
+    db.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
+      if (err) return res.status(500).send({ message: "Erreur du serveur." });
+      if (results.length === 0) return res.status(404).send({ message: "Utilisateur non trouvé." });
+  
+      const user = results[0];
+  
+      // Generate 6-digit code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const expires = new Date();
+      expires.setMinutes(expires.getMinutes() + 10); // Code valid for 10 minutes
+  
+      // Store the code and expiration in the database
+      db.query(
+        "UPDATE users SET reset_mdp_code = ?, reset_mdp_expire = ? WHERE email = ?",
+        [verificationCode, expires, email],
+        (err) => {
+          if (err) return res.status(500).send({ message: "Erreur lors de l'enregistrement du code." });
+  
+          // Send the code via email
+          const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASSWORD,
+            },
+          });
+  
+          const mailOptions = {
+            to: email,
+            from: "no-reply@yourapp.com",
+            subject: "Code de réinitialisation du mot de passe",
+            text: `Votre code de réinitialisation de mot de passe est : ${verificationCode}. Le code est valable pendant 10 minutes.`,
+          };
+  
+          transporter.sendMail(mailOptions, (err) => {
+            if (err) return res.status(500).send({ message: "Erreur lors de l'envoi de l'e-mail." });
+  
+            // Redirect to the code entry form
+            res.status(200).send({ message: "Code de vérification envoyé", email });
+          });
+        }
+      );
+    });
+  }
+  
+
+const verifierCode = (req,res)=>{
+
+}
+
 export default {
     creeCodePIN,
     verifierCodePIN,
@@ -268,5 +322,7 @@ export default {
     creePseudo,
     liste,
     infos,
-    modifierProfile
+    modifierProfile,
+    mdpOublie,
+    verifierCode
 }

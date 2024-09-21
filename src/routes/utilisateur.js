@@ -55,6 +55,12 @@ route.get('/infos',
     UtilisateurController.infos
 )
 
+// mot de passe oublie
+
+route.post('/mdp-oublie', UtilisateurController.mdpOublie)
+
+route.get('/mdp-oublie/verifier-code', UtilisateurController.verifierCode)
+
 // route.update('/pseudo', UtilisateurController.creePseudo)
 
 route.get('',UtilisateurController.liste)

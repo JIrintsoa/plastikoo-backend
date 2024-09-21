@@ -30,6 +30,7 @@ const liste = (req,res) => {
             utilisateur.prenom AS utilisateur_prenom,
             utilisateur.pseudo_utilisateur AS pseudo_utilisateur,
             utilisateur.email AS utilisateur_email,
+            utilisateur.img_profil as img_utilisateur,
             utilisateur.url_profil AS utilisateur_url_profil,
             pp.img_url as img_publication,
             pp.img_alt,

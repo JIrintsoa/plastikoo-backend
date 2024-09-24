@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mot de passe oublié</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .email-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .email-content {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .email-signature {
+            margin-top: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <!-- Logo placeholder, will be replaced with base64 image -->
+            <img src="{{logo}}" alt="Logo" width="150px">
+        </div>
+        
+        <div class="email-content">
+            <!-- <h1>{{title}}</h1> -->
+            <p>Bonjour {{prenom}},</p><br>
+            <p>{{content}}</p>
+        </div>
+
+        <div class="email-signature">
+            <!-- Signature image placeholder -->
+            <!-- <p>Best regards,</p> -->
+            <img src="{{signature}}" alt="Signature" width="600px" height="200px">
+        </div>
+    </div>
+</body>
+</html>

@@ -5,6 +5,7 @@ import 'dotenv/config'
 import UploadController from "./upload.js"
 import DateFormat from "../utils/date.format.js";
 import mailing from "../utils/mailing.js";
+import JwtUtils from "../utils/jwt.js"
 
 const PINSchemas = z.object({
     id_utilisateur: z.number().int().positive({message:"l'id_utilisateur doit etre positive"}),
@@ -273,16 +274,30 @@ const mdpOublie = (req, res) => {
         const user = results[0];
 
       // Generate 6-digit code
+        const TIME_VALID_CODE = process.env.JWT_EXPIRES_CODE_VALID_FORGOT_MDP; // "10m" format
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date();
-        expires.setMinutes(expires.getMinutes() + 10); // Code valid for 10 minutes
+        
+        // const timeUnit = TIME_VALID_CODE.slice(-1); // Get the last character ('m', 'h', etc.)
+        const timeValue = parseInt(TIME_VALID_CODE.slice(0, -1)); // Get the numeric value
+      
+
+        // const TIME_VALID_CODE = process.env.JWT_EXPIRES_CODE_VALID_FORGOT_MDP
+        // const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        // const expires = new Date();
+        expires.setMinutes(expires.getMinutes() + timeValue); // Code valid for 10 minutes
 
       // Store the code and expiration in the database
         mysqlPool.query(
             "UPDATE utilisateur SET reset_mdp_code = ?, reset_mdp_expire = ? WHERE email = ?",
             [verificationCode, expires, email],
-            (err) => {
+            async (err) => {
                 if (err) return res.status(500).send({ error: err.message });
+
+                // generate token
+                const token = await JwtUtils.generateToken({
+                    "id_utilisateur": user.id
+                });
 
                 // Send the code via email
                 mailing.sendEmail(
@@ -296,7 +311,7 @@ const mdpOublie = (req, res) => {
                         }
                         // Redirect to the code entry form
                         console.log(info)
-                        res.status(200).send({ message: "Code de vérification envoyé", email });
+                        res.status(200).send({ message: "Code de vérification envoyé" });
                     }
                 );
             }
@@ -304,9 +319,44 @@ const mdpOublie = (req, res) => {
     });
 }
 
-const verifierCode = (req,res)=>{
+const verifierCodeMdpOublie = (req, res) => {
+    const { email } = req.params;
+    const { code } = req.body;
+    // console.log(req.body)
+    // Check if the code is valid
+    
+    mysqlPool.query("SELECT id FROM utilisateur WHERE email = ? AND reset_mdp_code = ?", [email, code], (err, results) => {
+      if (err) return res.status(500).send({ error: err.message});
+      if (results.length === 0) return res.status(400).send({ error: "Code invalide." });
+  
+      const user = results[0];
+      console.log(user)
+  
+      // Check if the code has expired
+      if (new Date() > new Date(user.reset_mdp_expire)) {
+        return res.status(400).send({ error: "Code expiré." });
+      }
+  
+      // Successful verification, now log the user in or redirect to reset password
+      mysqlPool.query(
+        "UPDATE utilisateur SET reset_mdp_code = NULL, reset_mdp_expire = NULL WHERE email = ?",
+        [email],
+        async (err) => {
+          if (err) return res.status(500).send({ error: err.message});
+  
+          // Log the user in or redirect to dashboard
+          const tokenGenerated= await JwtUtils.generateToken({
+            "id_utilisateur" : user.id
+          })
+          console.log(tokenGenerated
 
+          )
+          res.status(200).send({ message: "Code à 6 chiffres vérifiés", token:tokenGenerated });
+        }
+      );
+    });
 }
+
 
 export default {
     creeCodePIN,
@@ -317,5 +367,5 @@ export default {
     infos,
     modifierProfile,
     mdpOublie,
-    verifierCode
+    verifierCodeMdpOublie
 }

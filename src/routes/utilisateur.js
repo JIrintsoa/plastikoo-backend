@@ -59,7 +59,9 @@ route.get('/infos',
 
 route.post('/mdp-oublie', UtilisateurController.mdpOublie)
 
-route.get('/mdp-oublie/verifier-code', UtilisateurController.verifierCode)
+route.post('/mdp-oublie/verifier-code/:email',
+    UtilisateurController.verifierCodeMdpOublie
+)
 
 // route.update('/pseudo', UtilisateurController.creePseudo)
 

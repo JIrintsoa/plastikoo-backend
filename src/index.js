@@ -20,6 +20,9 @@ import 'dotenv/config'
 
 import { Server } from "socket.io";
 import http from "http"
+
+import ServerlessHttp from "serverless-http";
+
 const host = process.env.DEV_HOST
 const port = process.env.DEV_PORT
 
@@ -47,6 +50,10 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get('/hello',(req,res) => {
+    res.send(`hello world`)
+})
+
 // middlewares
 app.use('/contact', ContactRoutes);
 app.use('/stock', StockRoutes)
@@ -64,10 +71,17 @@ app.use('/machine', MachineRecolteRoutes)
 app.use('/jwt/transaction', TransactionRoutesJWT)
 app.use('/jwt/utilisateur', UtilisateurRoutes)
 
-// Démarrer le serveur
-server.listen(port, host, () => {
-    console.log(`Server running on http://${host}:${port}`);
+// Serveur version local
+app.listen(port, host, () => {
+    console.log(`App running on http://${host}:${port}`);
 });
+
+// app.listen(port, () => {
+//     console.log(`App running on  port: ${port}`);
+//  });
+
+// Serveur version prod
+// module.exports.handler = ServerlessHttp(app)
 
 io.on('connection', (socket) => {
     console.log('Un utilisateur connecte');

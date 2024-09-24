@@ -3,7 +3,7 @@ import mysqlPool from "../config/database.js";
 import DateFormat from "./date.format.js";
 import bcrypt from "bcrypt";
 import JwtUtils from "../utils/jwt.js"
-import jwt from 'jsonwebtoken';
+import jwt, { decode } from 'jsonwebtoken';
 import "dotenv/config"
 import Passport  from "passport";
 
@@ -322,6 +322,7 @@ class AuthenticationController {
                 // Verify the JWT token
                 const token = req.header('Authorization').replace('Bearer ', '');
                 const decodedToken = jwt.verify(token, JWT_SECRET);
+                console.log(decodedToken)
                 const { id_utilisateur } = decodedToken;
                 if(id_utilisateur == undefined){
                     res.json({error:"l'utilisateur n'exsite pas"})

@@ -1,18 +1,24 @@
 import { Router } from "express";
 import BonAchat from "../controllers/bonAchat.js";
+import AuthenticationController from "../utils/authentication.js";
 
 const route = Router()
 
 // creer un bon achat
-route.post('', BonAchat.creer)
+route.post('/:id_service',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    BonAchat.creer
+)
 
-route.get('/:id_utilisateur',async (req,res)=>{
-    await BonAchat.liste(req,res)
-})
+route.get('',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    BonAchat.liste
+)
 
-route.get('/details/:id_utilisateur/:id_service', async (req,res)=>{
-    await BonAchat.details(req, res)
-})
+route.get('/details/:id_service',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    BonAchat.details
+)
 
 
 export default route

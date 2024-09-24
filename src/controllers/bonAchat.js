@@ -2,8 +2,6 @@ import {z, ZodError} from "zod"
 import mysqlPool from "../config/database.js";
 
 const bonAchatSchema = z.object({
-    id_utilisateur : z.number().int().positive({message:"id_utilisateur doit etre superieur à 0"}),
-    id_service : z.number().int().positive({message: "id_service doit etre superieur à 0"}),
     solde: z.number().int().multipleOf(0.01).positive({message:"Solde doit etre superieur à 0"}),
     commission: z.number().multipleOf(0.01).positive({message: "commission doit etre superieur à 0"}),
     duree_exp: z.number().int().positive({message: "duree d'expiration doit etre superieur à 0"})
@@ -25,14 +23,14 @@ const userService = z.object({
 
 const creer = (req, res) => {
     try {
+        const {id_utilisateur} = req.utilisateur;
+        const {id_service} = req.params
         const form = bonAchatSchema.parse({
-            id_utilisateur : req.body.id_utilisateur,
-            id_service : req.body.id_service,
             solde: req.body.montant,
-            commission: req.body.commission_plastikoo,
-            duree_exp : req.body.duree_jour_valide
+            commission: req.body.commission,
+            duree_exp : req.body.duree_exp
         })
-        const {id_utilisateur,id_service,solde,commission,duree_exp} = form
+        const {solde,commission,duree_exp} = form
         console.log(form)
         const sql_creer_ba = `call creer_ba(?,?,?,?,?)`;
         mysqlPool.query(sql_creer_ba,[id_utilisateur,id_service, solde,commission,duree_exp],(err,result) => {
@@ -59,10 +57,12 @@ const creer = (req, res) => {
 }
 
 const details = (req,res) =>{
-    const form = userService.parse({
-        id_utilisateur: req.params.id_utilisateur,
-        id_service: req.params.id_service
-    })
+    const {id_utilisateur} = req.utilisateur;
+    const {id_service} = req.params;
+    // const form = userService.parse({
+    //     id_utilisateur: req.utilisateur.id_utilisateur,
+    //     id_service: req.params.id_service
+    // })
     const sql = `select
         u.id as id_utilisateur,
         s.id as id_service,
@@ -72,7 +72,7 @@ const details = (req,res) =>{
         from utilisateur u
         inner join service s on s.id = ?
         where u.id = ?`
-    const {id_utilisateur, id_service} = form
+    // const {id_utilisateur, id_service} = form
     mysqlPool.query(sql,[id_service,id_utilisateur],(err,result) => {
         if (err) {
             console.error('Erreur:: ', err);
@@ -88,7 +88,7 @@ const details = (req,res) =>{
 const liste = (req,res)=> {
     const {
         id_utilisateur
-    } = req.params
+    } = req.utilisateur
     const sql = `SELECT
                 ba.code_barre,
                 t.montant,

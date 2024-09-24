@@ -4,6 +4,7 @@ import mysqlPool from "../config/database.js"
 import 'dotenv/config'
 import UploadController from "./upload.js"
 import DateFormat from "../utils/date.format.js";
+import mailing from "../utils/mailing.js";
 
 const PINSchemas = z.object({
     id_utilisateur: z.number().int().positive({message:"l'id_utilisateur doit etre positive"}),
@@ -261,6 +262,52 @@ const infos = (req,res) => {
     });
 }
 
+const mdpOublie = (req, res) => {
+    const { email } = req.body;
+
+    // Check if the user exists
+    mysqlPool.query("SELECT * FROM utilisateur WHERE email = ?", [email], (err, results) => {
+        if (err) return res.status(500).send({ error: err.message });
+        if (results.length === 0) return res.status(404).send({ error: "Utilisateur non trouvé." });
+
+        const user = results[0];
+
+      // Generate 6-digit code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date();
+        expires.setMinutes(expires.getMinutes() + 10); // Code valid for 10 minutes
+
+      // Store the code and expiration in the database
+        mysqlPool.query(
+            "UPDATE utilisateur SET reset_mdp_code = ?, reset_mdp_expire = ? WHERE email = ?",
+            [verificationCode, expires, email],
+            (err) => {
+                if (err) return res.status(500).send({ error: err.message });
+
+                // Send the code via email
+                mailing.sendEmail(
+                    email,
+                    user.prenom,
+                    "Code de réinitialisation du mot de passe",
+                    `Votre code de réinitialisation de mot de passe est :<strong> ${verificationCode} </strong>. Le code est valable pendant 10 minutes.`,
+                    (err, info) => {
+                        if (err) {
+                            return res.status(500).send({ message: "Erreur lors de l'envoi de l'e-mail." });
+                        }
+                        // Redirect to the code entry form
+                        console.log(info)
+                        res.status(200).send({ message: "Code de vérification envoyé", email });
+                    }
+                );
+            }
+        );
+    });
+}
+
+const verifierCode = (req,res)=>{
+
+}
+
 export default {
     creeCodePIN,
     verifierCodePIN,
@@ -268,5 +315,7 @@ export default {
     creePseudo,
     liste,
     infos,
-    modifierProfile
+    modifierProfile,
+    mdpOublie,
+    verifierCode
 }

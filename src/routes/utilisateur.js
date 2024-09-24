@@ -7,10 +7,10 @@ import UploadController from "../controllers/upload.js";
 
 const route =  Router()
 
-route.post('/cree-code-pin',AuthenticationController.verifyRoleToken('utilisateur'),async (req,res) => {
-    await UtilisateurController.creeCodePIN(req,res)
-    // console.log('cree code pin')
-})
+route.post('/cree-code-pin',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    UtilisateurController.creeCodePIN
+)
 
 route.post('/use-code-pin',AuthenticationController.verifyRoleToken('utilisateur'), async(req,res)=>{
     await UtilisateurController.verifierCodePIN(req,res)
@@ -54,6 +54,12 @@ route.get('/infos',
     AuthenticationController.verifyRoleToken('utilisateur'),
     UtilisateurController.infos
 )
+
+// mot de passe oublie
+
+route.post('/mdp-oublie', UtilisateurController.mdpOublie)
+
+route.get('/mdp-oublie/verifier-code', UtilisateurController.verifierCode)
 
 // route.update('/pseudo', UtilisateurController.creePseudo)
 

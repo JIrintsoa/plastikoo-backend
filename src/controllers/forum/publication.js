@@ -389,18 +389,15 @@ const reagir = (io) => async (req,res) => {
     }
 }
 
-// Comment creation function with transaction handling
 const commenter = (io) => async (req, res) => {
-    let connection;
+    let connection; 
     try {
-        // Validate request body using Zod schema
         commentaireSchemas.parse(req.body);
 
         const { id_publication } = req.params;
         const { id_utilisateur } = req.utilisateur;
         const { contenu } = req.body;
 
-        // Get a connection from the pool
         connection = await new Promise((resolve, reject) => {
             mysqlPool.getConnection((err, conn) => {
                 if (err) return reject(new Error("Erreur lors de la connexion à la base de données"));
@@ -442,7 +439,6 @@ const commenter = (io) => async (req, res) => {
 
         console.log('Commentaire créé avec succès:', result);
 
-        // Emit the new comment event via Socket.io after successful insert
         io.emit(fc_socket_commentaire, {
             id_publication,
             id_utilisateur,
@@ -489,7 +485,6 @@ const commenter = (io) => async (req, res) => {
 const repondreCommentaire = (io) => async (req, res) => {
     let connection;
     try {
-        // Validate request body using Zod schema
         commentaireSchemas.parse(req.body);
 
         const { id_publication, id_commentaire } = req.params;

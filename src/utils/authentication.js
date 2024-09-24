@@ -261,7 +261,7 @@ class AuthenticationController {
                 });
             });
             // Assuming the stored procedure returns the user's ID
-            const userId = result[0][0] // Adjust based on your stored procedure result
+            const userId = result[0][0]
             console.log(userId)
             // const tokenPayload = { id: userId };
             const tokenPayload = userId;
@@ -311,7 +311,6 @@ class AuthenticationController {
             }
         } finally {
             if (connection) {
-                // Release the connection back to the pool
                 connection.release();
             }
         }

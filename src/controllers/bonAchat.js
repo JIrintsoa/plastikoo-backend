@@ -26,45 +26,44 @@ const userService = z.object({
 });
 
 const creer = (req, res) => {
-    if(req.cpVerify == 1) {
-        try {
-            const {id_utilisateur} = req.utilisateur;
-
-            bonAchatSchema.parse(req.params)
-            const {id_service} = req.params
-            // const form = bonAchatSchema.parse({
-            //     solde: req.body.montant,
-            //     commission: req.body.commission,
-            //     duree_exp : req.body.duree_exp
-            // })
-            // const {solde,commission,duree_exp} = form
-            // console.log(form)
-            // const sql_creer_ba = `call creer_ba(?,?,?,?,?)`;
-            const sql_creer_ba = `call creer_ba(?,?)`;
-            mysqlPool.query(sql_creer_ba,[id_utilisateur,id_service],(err,result) => {
-                if (err) {
-                    console.error('Erreur création du bon d\'achat:: ', err);
-                    res.json({error:err.sqlMessage})
-                } else {
-                    const value = Object.assign({message:"Bon d'\'achat crée"},result[0][0])
-                    console.log('Transaction made successfully:', value);
-                    req.transaction = value
-                    // res.json(value);
-                }
-            });
-        } catch (error) {
-            if (error instanceof ZodError) {
-                const validationErrors = error.errors.map(err => err.message).join(', ');
-                console.error(error)
-                res.status(400).json({ error: validationErrors });
-            } else {
-                console.error(error); // Log the unexpected error for debugging
-                res.status(500).json({ error: 'Internal Server Error' });
-            }
-        }
+    // Check if code pin is verified
+    if (req.cpVerify !== 1) {
+        return res.status(400).json({ error: "Code pin invalide", details: req.cpVerify });
     }
-    else {
-        res.status(400).json({error:"code pin invalide ", details:req.cpVerify})
+    try {
+        const {id_utilisateur} = req.utilisateur;
+
+        bonAchatSchema.parse(req.params)
+        const {id_service} = req.params
+        // const form = bonAchatSchema.parse({
+        //     solde: req.body.montant,
+        //     commission: req.body.commission,
+        //     duree_exp : req.body.duree_exp
+        // })
+        // const {solde,commission,duree_exp} = form
+        // console.log(form)
+        // const sql_creer_ba = `call creer_ba(?,?,?,?,?)`;
+        const sql_creer_ba = `call creer_ba(?,?)`;
+        mysqlPool.query(sql_creer_ba,[id_utilisateur,id_service],(err,result) => {
+            if (err) {
+                console.error('Erreur création du bon d\'achat:: ', err);
+                res.json({error:err.sqlMessage})
+            } else {
+                const value = Object.assign({message:"Bon d'\'achat crée"},result[0][0])
+                console.log('Transaction made successfully:', value);
+                req.transaction = value
+                // res.json(value);
+            }
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const validationErrors = error.errors.map(err => err.message).join(', ');
+            console.error(error)
+            res.status(400).json({ error: validationErrors });
+        } else {
+            console.error(error); // Log the unexpected error for debugging
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
     }
 
 }

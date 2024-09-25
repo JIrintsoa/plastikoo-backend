@@ -66,7 +66,7 @@ const verifierSolde = ({id_user, somme},res) => {
     return isVerify
 }
 
-const verifierCodePIN = (req,res) => {
+const verifierCodePIN = (req,res,next) => {
 
     try {
         const form = PINSchemas.parse({
@@ -87,7 +87,9 @@ const verifierCodePIN = (req,res) => {
                 res.json({error:err.sqlMessage})
             } else {
                 console.log('Code pin verifie:\n', result);
-                res.json(result[0]);
+                req.cpVerify = result[0].est_verifie;
+                next()
+                // res.json(result[0]);
             }
         });
     } catch (error) {

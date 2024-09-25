@@ -1,10 +1,14 @@
 import {z, ZodError} from "zod"
 import mysqlPool from "../config/database.js";
 
+// const bonAchatSchema = z.object({
+//     solde: z.number().int().multipleOf(0.01).positive({message:"Solde doit etre superieur à 0"}),
+//     commission: z.number().multipleOf(0.01).positive({message: "commission doit etre superieur à 0"}),
+//     duree_exp: z.number().int().positive({message: "duree d'expiration doit etre superieur à 0"})
+// })
+
 const bonAchatSchema = z.object({
-    solde: z.number().int().multipleOf(0.01).positive({message:"Solde doit etre superieur à 0"}),
-    commission: z.number().multipleOf(0.01).positive({message: "commission doit etre superieur à 0"}),
-    duree_exp: z.number().int().positive({message: "duree d'expiration doit etre superieur à 0"})
+    id_service: z.string().min(1,{message: "id_service doit etre superieur à 0"})
 })
 
 // const userService = z.object({
@@ -22,25 +26,33 @@ const userService = z.object({
 });
 
 const creer = (req, res) => {
+    // Check if code pin is verified
+    if (req.cpVerify !== 1) {
+        return res.status(400).json({ error: "Code pin invalide", details: req.cpVerify });
+    }
     try {
         const {id_utilisateur} = req.utilisateur;
+
+        bonAchatSchema.parse(req.params)
         const {id_service} = req.params
-        const form = bonAchatSchema.parse({
-            solde: req.body.montant,
-            commission: req.body.commission,
-            duree_exp : req.body.duree_exp
-        })
-        const {solde,commission,duree_exp} = form
-        console.log(form)
-        const sql_creer_ba = `call creer_ba(?,?,?,?,?)`;
-        mysqlPool.query(sql_creer_ba,[id_utilisateur,id_service, solde,commission,duree_exp],(err,result) => {
+        // const form = bonAchatSchema.parse({
+        //     solde: req.body.montant,
+        //     commission: req.body.commission,
+        //     duree_exp : req.body.duree_exp
+        // })
+        // const {solde,commission,duree_exp} = form
+        // console.log(form)
+        // const sql_creer_ba = `call creer_ba(?,?,?,?,?)`;
+        const sql_creer_ba = `call creer_ba(?,?)`;
+        mysqlPool.query(sql_creer_ba,[id_utilisateur,id_service],(err,result) => {
             if (err) {
                 console.error('Erreur création du bon d\'achat:: ', err);
                 res.json({error:err.sqlMessage})
             } else {
                 const value = Object.assign({message:"Bon d'\'achat crée"},result[0][0])
                 console.log('Transaction made successfully:', value);
-                res.json(value);
+                req.transaction = value
+                // res.json(value);
             }
         });
     } catch (error) {
@@ -121,6 +133,7 @@ const detailsAvecCodeBarre = (req,res) => {
     const {
         id_utilisateur
     } = req.utilisateur
+    const {id_transaction} = req.transaction
     const sql = `SELECT
                 ba.code_barre,
                 t.montant,
@@ -135,8 +148,8 @@ const detailsAvecCodeBarre = (req,res) => {
                 bon_achat ba
             INNER JOIN transaction t ON ba.id_transaction = t.id
             INNER JOIN service s on t.id_service =  s.id
-            WHERE ba.etat = 'cree' and t.id_utilisateur = ? and DATEDIFF(ba.date_exp,CURRENT_TIMESTAMP()) > 0 `
-    mysqlPool.query(sql,[id_utilisateur],(err,result) => {
+            WHERE ba.etat = 'cree' and t.id_utilisateur = ? and t.id_transaction = ? and DATEDIFF(ba.date_exp,CURRENT_TIMESTAMP()) > 0 `
+    mysqlPool.query(sql,[id_utilisateur, id_transaction],(err,result) => {
         if (err) {
             console.error('Erreur:: ', err);
             res.json({error:err.sqlMessage})

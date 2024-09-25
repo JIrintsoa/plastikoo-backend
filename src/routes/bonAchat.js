@@ -16,7 +16,7 @@ route.get('',
     BonAchat.liste
 )
 
-route.get('/valider/:id_service',
+route.post('/valider/:id_service',
     AuthenticationController.verifyRoleToken('utilisateur'),
     UtilisateurController.verifierCodePIN,
     BonAchat.creer,

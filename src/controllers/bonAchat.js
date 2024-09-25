@@ -25,9 +25,11 @@ const userService = z.object({
     )
 });
 
-const creer = (req, res) => {
+const creer = (req, res,next) => {
+    const {est_verfie} = req.cpVerify
+    console.log(est_verfie)
     // Check if code pin is verified
-    if (req.cpVerify !== 1) {
+    if (est_verfie !== 1) {
         return res.status(400).json({ error: "Code pin invalide", details: req.cpVerify });
     }
     try {
@@ -52,6 +54,7 @@ const creer = (req, res) => {
                 const value = Object.assign({message:"Bon d'\'achat crée"},result[0][0])
                 console.log('Transaction made successfully:', value);
                 req.transaction = value
+                next()
                 // res.json(value);
             }
         });
@@ -148,7 +151,7 @@ const detailsAvecCodeBarre = (req,res) => {
                 bon_achat ba
             INNER JOIN transaction t ON ba.id_transaction = t.id
             INNER JOIN service s on t.id_service =  s.id
-            WHERE ba.etat = 'cree' and t.id_utilisateur = ? and t.id_transaction = ? and DATEDIFF(ba.date_exp,CURRENT_TIMESTAMP()) > 0 `
+            WHERE ba.etat = 'cree' and t.id_utilisateur = ? and t.id = ? and DATEDIFF(ba.date_exp,CURRENT_TIMESTAMP()) > 0 `
     mysqlPool.query(sql,[id_utilisateur, id_transaction],(err,result) => {
         if (err) {
             console.error('Erreur:: ', err);

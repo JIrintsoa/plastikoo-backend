@@ -187,13 +187,75 @@ const recolte = (req,res) => {
     }
 }
 
-const historique = (req,res) => {
-    const {
-        id_utilisateur
-    } = req.utilisateur
+// const historique = (req,res) => {
+//     const {
+//         id_utilisateur
+//     } = req.utilisateur
 
-    const sql = `select
-            t.id as id_transaction,
+//     const sql = `select
+//             t.id as id_transaction,
+//             t.reference,
+//             CASE
+//                 WHEN tt.type_transaction = 'Bon d''achat' THEN t.commission_plastikoo
+//                 WHEN tt.type_transaction = 'Recolte' THEN 0
+//                 WHEN tt.type_transaction = 'Achat Plastikoo' THEN 0
+//                 WHEN tt.type_transaction = 'Retrait' THEN t.commission_service
+//                 ELSE 0
+//             END as commission,
+//             t.montant as montant_initial,
+//             CASE
+//                 WHEN tt.type_transaction = 'Bon d''achat' THEN (t.montant - (t.montant * t.commission_plastikoo))
+//                 WHEN tt.type_transaction = 'Recolte' THEN t.montant
+//                 WHEN tt.type_transaction = 'Achat Plastikoo' THEN t.montant
+//                 WHEN tt.type_transaction = 'Retrait' THEN (t.montant - (t.montant * t.commission_service))
+//                 ELSE 0
+//             END as montant_final,
+//             t.numero_beneficiaire,
+//             t.numero_expediteur,
+//             t.date_transaction,
+//             s.libelle as entreprise,
+//             tt.type_transaction,
+//             mr.designation as machine,
+//             mr.lieu
+//             from transaction t
+//             JOIN service s on t.id_service = s.id
+//             JOIN type_transaction tt on t.id_type_transaction = tt.id
+//             JOIN machine_recolte mr on t.id_machine_recolte = mr.id
+//             where t.id_utilisateur = ? and MONTH(t.date_transaction) = MONTH(CURDATE())
+//             ORDER BY t.date_transaction DESC
+//             LIMIT 5`
+//     // console.log(sql)
+//     mysqlPool.query(sql,[id_utilisateur],(err,result)=>{
+//         if (err) {
+//             console.error('Erreur data fecthed:\n', err);
+//             res.json({error:err.sqlMessage})
+//         } 
+//         else if(result.length == 0){
+//             res.json({message:"Aucun historique transaction"})
+//         }
+//         else {
+//             // console.log(sql)
+//             console.log('Data fetched successfully:', result);
+//             res.json(result);
+//         }
+//     })
+// }
+
+const historique = (req, res) => {
+    const { id_utilisateur } = req.utilisateur;
+    
+    // Get the page from the query parameters, default to page 1
+    const page = parseInt(req.query.page) || 1;
+    
+    // Limit to 5 rows per page (you can also make this dynamic by accepting it as a parameter)
+    const limit = 5;
+    
+    // Calculate the offset based on the current page
+    const offset = (page - 1) * limit;
+
+    const sql = `
+        SELECT
+            t.id AS id_transaction,
             t.reference,
             CASE
                 WHEN tt.type_transaction = 'Bon d''achat' THEN t.commission_plastikoo
@@ -201,45 +263,44 @@ const historique = (req,res) => {
                 WHEN tt.type_transaction = 'Achat Plastikoo' THEN 0
                 WHEN tt.type_transaction = 'Retrait' THEN t.commission_service
                 ELSE 0
-            END as commission,
-            t.montant as montant_initial,
+            END AS commission,
+            t.montant AS montant_initial,
             CASE
                 WHEN tt.type_transaction = 'Bon d''achat' THEN (t.montant - (t.montant * t.commission_plastikoo))
                 WHEN tt.type_transaction = 'Recolte' THEN t.montant
                 WHEN tt.type_transaction = 'Achat Plastikoo' THEN t.montant
                 WHEN tt.type_transaction = 'Retrait' THEN (t.montant - (t.montant * t.commission_service))
                 ELSE 0
-            END as montant_final,
+            END AS montant_final,
             t.numero_beneficiaire,
             t.numero_expediteur,
             t.date_transaction,
-            s.libelle as entreprise,
+            s.libelle AS entreprise,
             tt.type_transaction,
-            mr.designation as machine,
+            mr.designation AS machine,
             mr.lieu
-            from transaction t
-            JOIN service s on t.id_service = s.id
-            JOIN type_transaction tt on t.id_type_transaction = tt.id
-            JOIN machine_recolte mr on t.id_machine_recolte = mr.id
-            where t.id_utilisateur = ?
-            ORDER BY t.date_transaction DESC
-            LIMIT 5`
-    // console.log(sql)
-    mysqlPool.query(sql,[id_utilisateur],(err,result)=>{
+        FROM transaction t
+        JOIN service s ON t.id_service = s.id
+        JOIN type_transaction tt ON t.id_type_transaction = tt.id
+        JOIN machine_recolte mr ON t.id_machine_recolte = mr.id
+        WHERE t.id_utilisateur = ? 
+        AND MONTH(t.date_transaction) = MONTH(CURDATE())
+        ORDER BY t.date_transaction DESC
+        LIMIT ? OFFSET ?`; // Using LIMIT and OFFSET for pagination
+    
+    mysqlPool.query(sql, [id_utilisateur, limit, offset], (err, result) => {
         if (err) {
-            console.error('Erreur data fecthed:\n', err);
-            res.json({error:err.sqlMessage})
-        } 
-        else if(result.length == 0){
-            res.json({message:"Aucun historique transaction"})
-        }
-        else {
-            // console.log(sql)
+            console.error('Erreur data fetched:\n', err);
+            res.status(500).json({ error: err.sqlMessage });
+        } else if (result.length == 0) {
+            res.json({ message: "Aucun historique transaction" });
+        } else {
             console.log('Data fetched successfully:', result);
             res.json(result);
         }
-    })
-}
+    });
+};
+
 
 export default {
     recolte,

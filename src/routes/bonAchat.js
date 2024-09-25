@@ -20,5 +20,9 @@ route.get('/details/:id_service',
     BonAchat.details
 )
 
+route.get('/genere/:id_transaction',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    BonAchat.detailsAvecCodeBarre
+)
 
 export default route

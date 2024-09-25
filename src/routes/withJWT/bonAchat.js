@@ -11,5 +11,8 @@ route.get('/:id_utilisateur',AuthenticationController.verifyRoleToken('utilisate
 
 route.get('/details/:id_utilisateur/:id_service',AuthenticationController.verifyRoleToken('utilisateur'), BonAchat.details)
 
-
+route.get('/genere/:id_transaction',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    BonAchat.detailsAvecCodeBarre
+)
 export default route;

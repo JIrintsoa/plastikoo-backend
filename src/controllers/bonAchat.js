@@ -67,6 +67,7 @@ const details = (req,res) =>{
         u.id as id_utilisateur,
         s.id as id_service,
         u.solde as montant,
+        s.libelle as entreprise,
         s.commission_plastikoo as commission,
         s.duree_jour_valide as duree_exp
         from utilisateur u

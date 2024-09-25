@@ -103,8 +103,7 @@ const liste = (req,res)=> {
                 bon_achat ba
             INNER JOIN transaction t ON ba.id_transaction = t.id
             INNER JOIN service s on t.id_service =  s.id
-            WHERE ba.etat = 'cree' and t.id_utilisateur = ?
-            LIMIT 5`
+            WHERE ba.etat = 'cree' and t.id_utilisateur = ?`
     mysqlPool.query(sql,[id_utilisateur],(err, result) => {
         if(err){
             console.error('Erreur:: ', err);
@@ -117,6 +116,37 @@ const liste = (req,res)=> {
     console.log('Liste des bon d\'achats')
 }
 
+const detailsAvecCodeBarre = (req,res) => {
+    const {
+        id_utilisateur
+    } = req.utilisateur
+    const sql = `SELECT
+                ba.code_barre,
+                t.montant,
+                s.libelle as entreprise,
+                CASE
+                    WHEN DATEDIFF(ba.date_exp,CURRENT_TIMESTAMP()) <= 0 THEN
+                        'EXPIRE'
+                    ELSE DATEDIFF(ba.date_exp,CURRENT_TIMESTAMP()) END AS jour_restant,
+                ba.etat,
+                ba.id_transaction
+            FROM
+                bon_achat ba
+            INNER JOIN transaction t ON ba.id_transaction = t.id
+            INNER JOIN service s on t.id_service =  s.id
+            WHERE ba.etat = 'cree' and t.id_utilisateur = ? and DATEDIFF(ba.date_exp,CURRENT_TIMESTAMP()) > 0 `
+    mysqlPool.query(sql,[id_utilisateur],(err,result) => {
+        if (err) {
+            console.error('Erreur:: ', err);
+            res.json({error:err.sqlMessage})
+        } else {
+            // const value = Object.assign({message:"Bon d'\'achat crée"},result[0][0])
+            console.log('Data fetched successfully:', result[0]);
+            res.json(result[0]);
+        }
+    });
+}
+
 const genererBarCode = (req,res) => {
     mysqlPool.
     console.log('valider')
@@ -124,6 +154,7 @@ const genererBarCode = (req,res) => {
 
 export default {
     creer,
+    detailsAvecCodeBarre,
     genererBarCode,
     details,
     liste

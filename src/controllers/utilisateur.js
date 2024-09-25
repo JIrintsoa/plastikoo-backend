@@ -80,14 +80,15 @@ const verifierCodePIN = (req,res,next) => {
 
         // const sql = `select id from utilisateur where id = ? and code_pin = ?`;
         const sql = `CALL verifier_code_pin(?,?,${process.env.CP_TENTE_MAX},${process.env.CP_TENTE_DELAIS})`
-        console.log(sql)
+        // console.log(sql)
         mysqlPool.query(sql,[id_utilisateur,code_pin],(err,result) => {
             if (err) {
                 console.error('Erreur fetch de l\'utilisateur:: ', err);
                 res.json({error:err.sqlMessage})
             } else {
-                console.log('Code pin verifie:\n', result);
-                req.cpVerify = result[0].est_verifie;
+                // console.log('Code pin verifie:\n', result);
+                // console.log(result[0][0])
+                req.cpVerify = result[0][0];
                 next()
                 // res.json(result[0]);
             }

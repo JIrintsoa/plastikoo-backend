@@ -18,6 +18,10 @@ router.post('',
     UploadController.singleFileUpload('forum'),
     PublicationController.publier)
 
+router.get('/recherche',
+    PublicationController.recherche
+)
+
 router.delete('/:id_publication',
     AuthenticationController.verifyRoleToken('utilisateur'),
     PublicationController.supprimer

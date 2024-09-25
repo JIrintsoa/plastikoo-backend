@@ -81,6 +81,72 @@ const liste = (req,res) => {
     });
 }
 
+const loadListe = (req,res) => {
+    // const {lastid} = req.query
+    const lastid = req.query.lastId || 0;
+    console.log(lastid)
+    const sql = `SELECT
+            publication.id AS publication_id,
+            publication.titre,
+            publication.contenu,
+            publication.date_creation,
+            publication.lien,
+            utilisateur.nom AS utilisateur_nom,
+            utilisateur.prenom AS utilisateur_prenom,
+            utilisateur.pseudo_utilisateur AS pseudo_utilisateur,
+            utilisateur.email AS utilisateur_email,
+            utilisateur.img_profil as img_utilisateur,
+            utilisateur.url_profil AS utilisateur_url_profil,
+            pp.img_url as img_publication,
+            pp.img_alt,
+            COUNT(DISTINCT reaction_pub.id) AS nbr_reactions,
+            COUNT(DISTINCT commentaire_pub.id) AS nbr_commentaires
+        FROM
+            plastikoo2.publication
+        JOIN
+            plastikoo2.utilisateur
+        ON
+            publication.id_utilisateur = utilisateur.id
+        LEFT JOIN
+            plastikoo2.photo_publication pp
+        ON
+            pp.id_publication = publication.id
+        LEFT JOIN
+            plastikoo2.reaction_pub
+        ON
+            publication.id = reaction_pub.id_publication
+        LEFT JOIN
+            plastikoo2.commentaire_pub
+        ON
+            publication.id = commentaire_pub.id_publication
+        WHERE publication.id < ?
+        GROUP BY
+            publication.id,
+            publication.titre,
+            publication.contenu,
+            publication.date_creation,
+            publication.lien,
+            utilisateur.nom,
+            utilisateur.prenom,
+            utilisateur.email,
+            utilisateur.url_profil,
+            pp.img_url,
+            pp.img_alt
+        ORDER BY
+            publication.id DESC;`
+
+
+    mysqlPool.query(sql,[lastid],(err,result) => {
+        if (err) {
+            console.error('Erreur data fetched:: \n', err);
+            res.json({error:err.sqlMessage})
+        } else {
+            console.log('Data fetched : \n', result);
+            res.json(result);
+        }
+    });
+}
+
 const recherche = (req,res) => {
     console.log(req.query)
     const {keyword} = req.query
@@ -601,5 +667,6 @@ export default {
     repondreCommentaire,
     listeCommentaire,
     listSousCommentaire,
-    recherche
+    recherche,
+    loadListe
 }

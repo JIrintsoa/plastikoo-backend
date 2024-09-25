@@ -11,6 +11,11 @@ router.get('',
     PublicationController.liste
 )
 
+router.get('/loading',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    PublicationController.loadListe
+)
+
 
 // Poster une publication
 router.post('',

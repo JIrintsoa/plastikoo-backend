@@ -1,6 +1,7 @@
 import { Router } from "express";
 import BonAchat from "../controllers/bonAchat.js";
 import AuthenticationController from "../utils/authentication.js";
+import UtilisateurController from "../controllers/utilisateur.js"
 
 const route = Router()
 
@@ -13,6 +14,13 @@ route.post('/:id_service',
 route.get('',
     AuthenticationController.verifyRoleToken('utilisateur'),
     BonAchat.liste
+)
+
+route.post('/valider/:id_service',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    UtilisateurController.verifierCodePIN,
+    BonAchat.creer,
+    BonAchat.detailsAvecCodeBarre
 )
 
 route.get('/details/:id_service',

@@ -11,12 +11,21 @@ router.get('',
     PublicationController.liste
 )
 
+router.get('/loading',
+    AuthenticationController.verifyRoleToken('utilisateur'),
+    PublicationController.loadListe
+)
+
 
 // Poster une publication
 router.post('',
     AuthenticationController.verifyRoleToken('utilisateur'),
     UploadController.singleFileUpload('forum'),
     PublicationController.publier)
+
+router.get('/recherche',
+    PublicationController.recherche
+)
 
 router.delete('/:id_publication',
     AuthenticationController.verifyRoleToken('utilisateur'),

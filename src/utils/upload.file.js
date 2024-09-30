@@ -16,9 +16,9 @@ function generateRandomName() {
 
 function getMulterStorage(typeFieldName) {
     return multer.diskStorage({
-        // destination: path.join(__dirname, "../uploads"),
+        destination: path.join(__dirname, "../../uploads"),
         
-        destination: path.join(process.env.DIR_LOCAL_STORAGE_FILE, "uploads"),
+        // destination: path.join(process.env.DIR_LOCAL_STORAGE_FILE, "uploads"),
         filename: (req, file, cb) => {
             const randomName = generateRandomName();
             const fileExtension = path.extname(file.originalname);

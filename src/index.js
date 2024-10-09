@@ -13,6 +13,9 @@ import UploadFileRoutes from "./routes/upload.js"
 import TicketRoutes from "./routes/ticket.js"
 import MachineRecolteRoutes from "./routes/machine.recolte.js"
 
+// import for e-commerce
+import ProduitRoutes from "./routes/produit.js"
+
 // Import routes with JWT
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
 import 'dotenv/config'
@@ -66,6 +69,9 @@ app.use('/forum/publication', PublicationRoutes)
 app.use('/upload', UploadFileRoutes)
 app.use('/ticket', TicketRoutes)
 app.use('/machine', MachineRecolteRoutes)
+
+// middlewares for e-commerce:
+app.use('/produits', ProduitRoutes )
 
 // API with JWT token
 app.use('/jwt/transaction', TransactionRoutesJWT)

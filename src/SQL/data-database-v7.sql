@@ -762,9 +762,9 @@ ALTER TABLE plastikoo2.transaction MODIFY numero_beneficiaire VARCHAR(13)     CO
 
 ALTER TABLE plastikoo2.transaction MODIFY numero_expediteur VARCHAR(13)     COMMENT 's''applique avec le retrait, achat plastikoo';
 
-INSERT INTO plastikoo2.categorie( id, type_categorie ) VALUES ( 1, 'Recyclable');
-INSERT INTO plastikoo2.categorie( id, type_categorie ) VALUES ( 2, 'Non Recyclable');
-INSERT INTO plastikoo2.categorie( id, type_categorie ) VALUES ( 3, 'Bioplastique');
+INSERT INTO plastikoo2.categorie( id, type_categorie ) VALUES ( 1, 'Construction');
+INSERT INTO plastikoo2.categorie( id, type_categorie ) VALUES ( 2, 'Meuble');
+INSERT INTO plastikoo2.categorie( id, type_categorie ) VALUES ( 3, 'Jouets');
 INSERT INTO plastikoo2.role( id, designation ) VALUES ( 1, 'administrateur');
 INSERT INTO plastikoo2.role( id, designation ) VALUES ( 2, 'moderateur');
 INSERT INTO plastikoo2.role( id, designation ) VALUES ( 3, 'utilisateur');

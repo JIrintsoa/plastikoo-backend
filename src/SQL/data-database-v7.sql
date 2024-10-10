@@ -946,3 +946,11 @@ INSERT INTO plastikoo2.commentaire_pub( id, contenu, id_utilisateur, id_publicat
 INSERT INTO plastikoo2.photo_publication( id, img_url, img_alt, id_publication ) VALUES ( 1, 'plastikoo-test-1.png', 'Plastikoo test 1', 23);
 INSERT INTO plastikoo2.photo_publication( id, img_url, img_alt, id_publication ) VALUES ( 2, 'plastikoo-test-1.png', 'Plastikoo test 2', 24);
 INSERT INTO plastikoo2.photo_publication( id, img_url, img_alt, id_publication ) VALUES ( 4, 'forum-252606017.png', 'plastikoo osc final', 26);
+
+-- photo produits
+CREATE  TABLE plastikoo2.photo_produit ( 
+	id                   INT    NOT NULL AUTO_INCREMENT  PRIMARY KEY,
+	image                VARCHAR(255)       ,
+	id_produit           INT    NOT NULL   ,
+	CONSTRAINT fk_photo_produit_produit FOREIGN KEY ( id_produit ) REFERENCES plastikoo2.produit( id ) ON DELETE CASCADE ON UPDATE NO ACTION
+ ) engine=InnoDB;

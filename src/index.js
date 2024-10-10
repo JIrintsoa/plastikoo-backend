@@ -15,6 +15,7 @@ import MachineRecolteRoutes from "./routes/machine.recolte.js"
 
 // import for e-commerce
 import ProduitRoutes from "./routes/produit.js"
+import PanierRoutes from "./routes/panier.js"
 
 // Import routes with JWT
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
@@ -72,19 +73,20 @@ app.use('/machine', MachineRecolteRoutes)
 
 // middlewares for e-commerce:
 app.use('/produits', ProduitRoutes )
+app.use('/panier', PanierRoutes)
 
 // API with JWT token
 app.use('/jwt/transaction', TransactionRoutesJWT)
 app.use('/jwt/utilisateur', UtilisateurRoutes)
 
 // Serveur version local
-server.listen(port, host, () => {
-   console.log(`App running on http://${host}:${port}`);
-});
-
-// server.listen(port, () => {
-//       console.log(`App running on  port: ${port}`);
+// server.listen(port, host, () => {
+//    console.log(`App running on http://${host}:${port}`);
 // });
+
+server.listen(port, () => {
+      console.log(`App running on  port: ${port}`);
+});
 
 // Serveur version prod
 // module.exports.handler = ServerlessHttp(app)

@@ -21,6 +21,7 @@ import PanierRoutes from "./routes/panier.js"
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
 import 'dotenv/config'
 
+import cors from "cors"
 
 import { Server } from "socket.io";
 import http from "http"
@@ -48,6 +49,15 @@ app.set('views', path.join(__dirname, 'views'));
 app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
 app.use(express.json());
 app.use(bodyParser.json())
+
+// CORS Middleware Configuration
+const corsOptions = {
+    origin: '*', // Allows all origins, or replace '*' with specific domains for production like "http://example.com"
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+app.use(cors(corsOptions));  // Use CORS middleware
 
 app.use((req, res, next) => {
     req.io = io; 

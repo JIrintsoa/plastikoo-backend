@@ -39,20 +39,16 @@ class ProduitController {
         const limit = parseInt(req.query.limit) || 3
         const sql = `
             SELECT
-            	produit.id,
+            	produit.id as id_produit,
             	produit.designation,
             	produit.description,
-            	produit.prix_vente,
             	produit.img,
-            	produit.qte_kg,
-            	categorie.type_categorie,
-            	type_plastique.p_type
+                categorie.id as id_categorie,
+            	categorie.type_categorie
             FROM
             	plastikoo2.produit
             JOIN
             	plastikoo2.categorie ON produit.id_cat = categorie.id
-            JOIN
-            	plastikoo2.type_plastique ON produit.id_type_plastique = type_plastique.id
             WHERE produit.designation LIKE '%Tiny%';`; // Using LIMIT and OFFSET for pagination
         
         mysqlPool.query(sql, [ limit], (err, result) => {

@@ -1,5 +1,6 @@
 import DBAchatPlastikoo from '../config/database.js'
 import {z, ZodError} from "zod"
+import mailing from '../utils/mailing.js';
 import phoneNumberPattern from '../utils/phone.number.pattern.js';
 
 
@@ -47,69 +48,82 @@ const produitSchema = z.object({
 
 class DevisController {
     static faireDevis = (req,res) => {
-
-        DBAchatPlastikoo.getConnection((err, conn) => {
+      mailing.sendEmail(
+        'johnsirintsoa18@gmail.com',
+        'Johns',
+        "Code de réinitialisation du mot de passe",
+        `Votre code de réinitialisation de mot de passe est :<strong> 1234 </strong>. Le code est valable pendant 10 minutes.`,
+        (err, info) => {
             if (err) {
-                console.error('Erreur lors de l\'obtention de la connexion:', err);
-                return res.status(500).json({ error: 'Erreur de connexion à la base de données' });
+                return res.status(500).send({ message: "Erreur lors de l'envoi de l'e-mail." });
             }
+            // Redirect to the code entry form
+            console.log(info)
+            res.status(200).send({ message: "Code de vérification envoyé" });
+        }
+    );
+        // DBAchatPlastikoo.getConnection((err, conn) => {
+        //     if (err) {
+        //         console.error('Erreur lors de l\'obtention de la connexion:', err);
+        //         return res.status(500).json({ error: 'Erreur de connexion à la base de données' });
+        //     }
     
-            try {
-                // Valider le corps de la requête
-                creerTicketSchemas.parse(req.body);
+        //     try {
+        //         // Valider le corps de la requête
+        //         creerTicketSchemas.parse(req.body);
     
-                const { montant } = req.body;
-                const { id_machine_recolte } = req.params;
+        //         const { montant } = req.body;
+        //         const { id_machine_recolte } = req.params;
     
-                // Démarrer la transaction
-                conn.beginTransaction(err => {
-                    if (err) {
-                        conn.release(); // Toujours libérer la connexion
-                        console.error('Erreur lors du démarrage de la transaction:', err);
-                        return res.status(500).json({ error: 'Erreur de transaction' });
-                    }
+        //         // Démarrer la transaction
+        //         conn.beginTransaction(err => {
+        //             if (err) {
+        //                 conn.release(); // Toujours libérer la connexion
+        //                 console.error('Erreur lors du démarrage de la transaction:', err);
+        //                 return res.status(500).json({ error: 'Erreur de transaction' });
+        //             }
     
-                    // Requête SQL pour insérer dans `ticket`
-                    const sql = `INSERT INTO ticket (montant, code_recolte, id_machine_recolte) VALUES (?, (SELECT generate_code_recolte()), ?)`;
+        //             // Requête SQL pour insérer dans `ticket`
+        //             const sql = `INSERT INTO ticket (montant, code_recolte, id_machine_recolte) VALUES (?, (SELECT generate_code_recolte()), ?)`;
     
-                    conn.query(sql, [montant, id_machine_recolte], (err, result) => {
-                        if (err) {
-                            console.error('Erreur lors de l\'insertion des données:', err);
-                            return conn.rollback(() => {
-                                conn.release(); // Rollback et libération en cas d'erreur
-                                res.status(500).json({ error: 'Échec de la création du ticket' });
-                            });
-                        }
+        //             conn.query(sql, [montant, id_machine_recolte], (err, result) => {
+        //                 if (err) {
+        //                     console.error('Erreur lors de l\'insertion des données:', err);
+        //                     return conn.rollback(() => {
+        //                         conn.release(); // Rollback et libération en cas d'erreur
+        //                         res.status(500).json({ error: 'Échec de la création du ticket' });
+        //                     });
+        //                 }
     
-                        const id_ticket = result.insertId;
+        //                 const id_ticket = result.insertId;
     
-                        // Valider la transaction
-                        conn.commit(err => {
-                            if (err) {
-                                console.error('Erreur lors de la validation de la transaction:', err);
-                                return conn.rollback(() => {
-                                    conn.release(); // Rollback et libération en cas d'erreur
-                                    res.status(500).json({ error: 'Échec de la validation de la transaction' });
-                                });
-                            }
+        //                 // Valider la transaction
+        //                 conn.commit(err => {
+        //                     if (err) {
+        //                         console.error('Erreur lors de la validation de la transaction:', err);
+        //                         return conn.rollback(() => {
+        //                             conn.release(); // Rollback et libération en cas d'erreur
+        //                             res.status(500).json({ error: 'Échec de la validation de la transaction' });
+        //                         });
+        //                     }
     
-                            console.log('Ticket créé avec succès avec l\'ID:', id_ticket);
-                            conn.release(); // Toujours libérer la connexion
-                            res.json({ id_ticket }); // Envoyer l'ID du ticket créé
-                        });
-                    });
-                });
-            } catch (error) {
-                conn.release(); // Libérer la connexion en cas d'échec de la validation ou d'erreur inattendue
-                if (error instanceof ZodError) {
-                    const validationErrors = error.errors.map(err => err.message).join(', ');
-                    res.status(400).json({ error: `Erreur de validation: ${validationErrors}` });
-                } else {
-                    console.error('Erreur inattendue:', error);
-                    res.status(500).json({ error: 'Erreur interne du serveur' });
-                }
-            }
-        });
+        //                     console.log('Ticket créé avec succès avec l\'ID:', id_ticket);
+        //                     conn.release(); // Toujours libérer la connexion
+        //                     res.json({ id_ticket }); // Envoyer l'ID du ticket créé
+        //                 });
+        //             });
+        //         });
+        //     } catch (error) {
+        //         conn.release(); // Libérer la connexion en cas d'échec de la validation ou d'erreur inattendue
+        //         if (error instanceof ZodError) {
+        //             const validationErrors = error.errors.map(err => err.message).join(', ');
+        //             res.status(400).json({ error: `Erreur de validation: ${validationErrors}` });
+        //         } else {
+        //             console.error('Erreur inattendue:', error);
+        //             res.status(500).json({ error: 'Erreur interne du serveur' });
+        //         }
+        //     }
+        // });
     }
 }
 

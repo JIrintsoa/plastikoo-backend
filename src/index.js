@@ -12,6 +12,7 @@ import PublicationRoutes from "./routes/forum/publication.js"
 import UploadFileRoutes from "./routes/upload.js"
 import TicketRoutes from "./routes/ticket.js"
 import MachineRecolteRoutes from "./routes/machine.recolte.js"
+import DevisRoutes from "./routes/devis.js"
 
 // import for e-commerce
 import ProduitRoutes from "./routes/produit.js"
@@ -84,6 +85,9 @@ app.use('/machine', MachineRecolteRoutes)
 // middlewares for e-commerce:
 app.use('/produits', ProduitRoutes )
 app.use('/panier', PanierRoutes)
+
+// middlewares for sales funnel
+app.use('/devis', DevisRoutes)
 
 // API with JWT token
 app.use('/jwt/transaction', TransactionRoutesJWT)

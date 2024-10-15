@@ -48,13 +48,14 @@ const produitSchema = z.object({
 
 class DevisController {
     static faireDevis = (req,res) => {
-      mailing.sendEmail(
+      mailing.sendEmailByDirectAdmin(
         'johnsirintsoa18@gmail.com',
         'Johns',
         "Code de réinitialisation du mot de passe",
         `Votre code de réinitialisation de mot de passe est :<strong> 1234 </strong>. Le code est valable pendant 10 minutes.`,
         (err, info) => {
             if (err) {
+                console.log(err)
                 return res.status(500).send({ message: "Erreur lors de l'envoi de l'e-mail." });
             }
             // Redirect to the code entry form

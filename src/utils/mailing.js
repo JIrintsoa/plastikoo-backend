@@ -4,6 +4,10 @@ import { fileURLToPath } from "url";
 import fs from 'fs'
 import 'dotenv/config'
 
+import { promisify } from "util";
+
+const readFileAsync = promisify(fs.readFile);
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -68,10 +72,13 @@ const sendEmailByDirectAdmin = async (to, prenom, subject, text, callback) =>{
   try {
     // Create a Nodemailer transporter
     let transporter = nodemailer.createTransport({
-        service: 'mail.plastikoo.mg',
-        username: 'no-reply@plastikoo.mg',
-        password: '123noreply',
-        port:587
+        host: 'mail.plastikoo.mg',
+        port: 587,
+        secure:false,
+        auth: {
+          user: 'no-reply@plastikoo.mg', // Your email
+          pass: '123noreply', // Your email password
+        },
         // auth: {
         //     user: process.env.PLASTIKOO_MAIL,
         //     pass: process.env.PLASTIKOO_SENDER_MAIL_MDP
@@ -88,6 +95,14 @@ const sendEmailByDirectAdmin = async (to, prenom, subject, text, callback) =>{
     // Resolve the full path to the logo and signature images
     const logoPath = path.join(imagesDirectory, 'LOGO-FINALE-vert.png');
     const signaturePath = path.join(imagesDirectory, 'signature-email.png');
+
+    const htmlTemplate = await readFileAsync(emailTemplatePath, 'utf-8');
+
+    const logoRealPath = await readFileAsync(logoPath);
+    const signatureRealPath = await readFileAsync(signaturePath)
+    
+    console.log(logoPath)
+    console.log(signaturePath) 
 
     // Read images and convert them to base64
     const logoBase64 = fs.readFileSync(logoPath, { encoding: 'base64' });

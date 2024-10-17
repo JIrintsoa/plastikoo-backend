@@ -370,5 +370,5 @@ export default {
     infos,
     modifierProfile,
     mdpOublie,
-    verifierCodeMdpOublie
+    verifierCodeMdpOublie,
 }

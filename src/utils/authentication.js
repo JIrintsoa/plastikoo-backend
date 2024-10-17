@@ -5,7 +5,6 @@ import bcrypt from "bcrypt";
 import JwtUtils from "../utils/jwt.js"
 import jwt, { decode } from 'jsonwebtoken';
 import "dotenv/config"
-import Passport  from "passport";
 
 const {JWT_SECRET,BCRYPT_SALT_ROUNDS, MIN_PASSWORD_LENGTH} = process.env;
 
@@ -361,20 +360,55 @@ class AuthenticationController {
         };
     };
 
-    static logOut = async(req,res) =>{
-
+    static async verifyEmail(email) {
+        const query = `SELECT id, nom, prenom, email FROM utilisateur WHERE email = ?`;
+    
+        try {
+            const [results] = await mysqlPool.promise().query(query, [email]);
+    
+            // If results found, return the first result (user)
+            if (results.length > 0) {
+                return results[0];
+            }
+            
+            // If no results found, return null
+            return null;
+        } catch (err) {
+            // Throw error to be handled by caller or a higher-level error handler
+            throw new Error(`Error verifying email: ${err.message}`);
+        }
     }
 
-    static googleAuth = Passport.authenticate('google', { scope: ['profile', 'email'] });
-
-    static googleCallback = (req, res) => {
-      const token = signToken(req.user);
-      res.json({ token });
-    };
+    static ajouterUtilisateur = (userData) => {
+        return new Promise((resolve, reject) => {
+          // SQL query to insert user into the `utilisateur` table
+          const query = `
+            INSERT INTO utilisateur (id_google, nom, prenom, date_naissance, email,img_profil)
+            VALUES (?, ?, ?, ?, ?,?)
+          `;
+      
+          // Format the birthday (assuming it's coming as an object with year, month, and day)
+          const { id: googleId, nom, prenom, email, birthday, img_profil } = userData;
+          const birthDate = `${birthday.year}-${birthday.month}-${birthday.day}`;
+      
+          // Execute the query using the MySQL pool
+          mysqlPool.query(
+            query,
+            [googleId, nom, prenom, birthDate, email,img_profil],
+            (err, results) => {
+              if (err) {
+                console.error('Error inserting user:', err);
+                return reject(err);
+              }
+              
+              // Return the newly created user ID
+              resolve(results.insertId);
+            }
+          );
+        });
+      };
     
-    static getProfile = (req, res) => {
-      res.json(req.user);
-    };
+
 }
 
 export default AuthenticationController

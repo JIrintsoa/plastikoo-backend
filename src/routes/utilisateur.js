@@ -90,9 +90,9 @@ route.get('/auth/google/callback', Passport.authenticate('google', { failureRedi
     }
 )
 
-route.get('/auth/protected', (req,res)=>{
-    let name = req.user.displayName
-    res.send(`Hello world ${name}`)
-})
+// route.get('/auth/protected', (req,res)=>{
+//     let name = req.user.displayName
+//     res.send(`Hello world ${name}`)
+// })
 
 export default route;

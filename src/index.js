@@ -1,6 +1,12 @@
 import express from "express";
 import bodyParser from "body-parser";
-import path from "path"; 
+import path from "path";
+import passport from "passport";
+import passportFacebook from "passport-facebook";
+import session from "express-session";
+
+const facebookStrategy = passportFacebook.Strategy
+
 import ContactRoutes from "./routes/contact.js";
 import StockRoutes from "./routes/stock.js";
 import PtypeRoutes from "./routes/pType.js";
@@ -13,6 +19,8 @@ import UploadFileRoutes from "./routes/upload.js"
 import TicketRoutes from "./routes/ticket.js"
 import MachineRecolteRoutes from "./routes/machine.recolte.js"
 import DevisRoutes from "./routes/devis.js"
+import FacebookRoutes from "./routes/facebook.js"
+import GoogleRoutes from "./routes/google.js"
 
 // import for e-commerce
 import ProduitRoutes from "./routes/produit.js"
@@ -22,12 +30,13 @@ import PanierRoutes from "./routes/panier.js"
 import TransactionRoutesJWT from './routes/withJWT/transactions.js'
 import 'dotenv/config'
 
+// import authentication google facebook config
+import './config/auth.google.js'
+
 import cors from "cors"
 
 import { Server } from "socket.io";
 import http from "http"
-
-import ServerlessHttp from "serverless-http";
 
 const host = process.env.DEV_HOST
 const port = process.env.DEV_PORT
@@ -48,6 +57,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
+app.use(express.static('src'));
+
 app.use(express.json());
 app.use(bodyParser.json())
 
@@ -59,6 +70,35 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));  // Use CORS middleware
+
+// use the passport facebook
+
+app.use(session({
+    resave: false,
+    saveUninitialized: true,
+    secret: 'SECRET'
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// passport.serializeUser(function (user, done) {
+//     done(null, user);
+// });
+  
+// passport.deserializeUser(function (id, done) {
+//     return done(null, id);
+// });
+
+passport.use(new facebookStrategy({
+        clientID: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        callbackURL: 'http://localhost:5000/facebook/auth/callback',
+        profileFields: ['id', 'displayName', 'name', 'gender','email','picture.type(large)']
+    }, function (accessToken, refreshToken, profile, done) {
+        console.log(profile)
+        return done(null, profile);
+    }
+));
 
 app.use((req, res, next) => {
     req.io = io; 
@@ -88,6 +128,10 @@ app.use('/panier', PanierRoutes)
 
 // middlewares for sales funnel
 app.use('/devis', DevisRoutes)
+
+// middlwares authentication google, facebook
+app.use('/google',GoogleRoutes)
+app.use('/facebook',FacebookRoutes)
 
 // API with JWT token
 app.use('/jwt/transaction', TransactionRoutesJWT)

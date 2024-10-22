@@ -1,5 +1,5 @@
 import { z,ZodError } from "zod"
-import mysqlPool from "../config/database.js"
+import {mysqlPool} from "../config/database.js"
 
 import 'dotenv/config'
 import UploadController from "./upload.js"
@@ -360,6 +360,41 @@ const verifierCodeMdpOublie = (req, res) => {
     });
 }
 
+const getById = (req,res) => {
+    const {id_utilisateur} = req.params
+    const sql = ` SELECT
+    id,
+    nom,
+    email,
+    prenom,
+    pseudo_utilisateur as pseudo,
+    date_naissance,
+    img_profil,
+    id_facebook,
+    id_google,
+    solde
+    FROM utilisateur where id = ${id_utilisateur}`
+
+    mysqlPool.query(sql, [id_utilisateur], (err, result) => {
+        if (err) {
+            console.error('Erreur lors de la récupération de l\'utilisateur: ', err);
+            return res.status(500).json({
+                error: err.sqlMessage
+            });
+        }
+
+        if (result.length === 0) {
+            // Handle case where no user is found
+            return res.status(404).json({
+                error: 'Utilisateur non trouvé',
+            });
+        }
+
+        console.log('Utilisateur récupérée avec succès: ', result);
+        return res.status(200).json(result);
+    });
+}
+
 
 export default {
     creeCodePIN,
@@ -368,6 +403,7 @@ export default {
     creePseudo,
     liste,
     infos,
+    getById,
     modifierProfile,
     mdpOublie,
     verifierCodeMdpOublie,

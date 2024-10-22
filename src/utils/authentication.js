@@ -1,5 +1,5 @@
 import {z, ZodError} from "zod"
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 import DateFormat from "./date.format.js";
 import bcrypt from "bcrypt";
 import JwtUtils from "../utils/jwt.js"
@@ -363,20 +363,19 @@ class AuthenticationController {
     static async verifyEmail(email) {
         const query = `SELECT id, nom, prenom, email FROM utilisateur WHERE email = ?`;
     
-        try {
-            const [results] = await mysqlPool.promise().query(query, [email]);
-    
-            // If results found, return the first result (user)
-            if (results.length > 0) {
-                return results[0];
-            }
-            
-            // If no results found, return null
-            return null;
-        } catch (err) {
-            // Throw error to be handled by caller or a higher-level error handler
-            throw new Error(`Error verifying email: ${err.message}`);
-        }
+        return new Promise((resolve, reject) => {
+            mysqlPool.query(query, [email], (err, results) => {
+                if (err) {
+                    return reject(new Error(`Error in query: ${err.message}`));
+                }
+                // console.log(results);
+                if (results.length > 0) {
+                    resolve(results[0]);
+                } else {
+                    resolve(null); // Return null if no results
+                }
+            });
+        });
     }
 
     static ajouterUtilisateur = (userData) => {
@@ -406,7 +405,35 @@ class AuthenticationController {
             }
           );
         });
-      };
+    };
+
+    static ajouterUtilisateurFacebook = (userData) => {
+        return new Promise((resolve, reject) => {
+          // SQL query to insert user into the `utilisateur` table
+          const query = `
+            INSERT INTO utilisateur (id_facebook, nom, prenom,  email,img_profil)
+            VALUES (?, ?, ?, ?, ?)
+          `;
+      
+          // Format the birthday (assuming it's coming as an object with year, month, and day)
+          const { id: facebookId, nom, prenom, email, img_profil } = userData;
+        //   const birthDate = `${birthday.year}-${birthday.month}-${birthday.day}`;
+      
+          // Execute the query using the MySQL pool
+          mysqlPool.query(
+            query,
+            [facebookId, nom, prenom, email,img_profil],
+            (err, results) => {
+                if (err) {
+                    console.error('Error inserting user:', err);
+                    return reject(err);
+                }
+              // Return the newly created user ID
+                resolve(results.insertId);
+            }
+          );
+        });
+    };
     
 
 }

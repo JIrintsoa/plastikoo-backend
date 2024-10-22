@@ -1,5 +1,5 @@
 import {z, ZodError} from "zod"
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 
 // const bonAchatSchema = z.object({
 //     solde: z.number().int().multipleOf(0.01).positive({message:"Solde doit etre superieur à 0"}),

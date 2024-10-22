@@ -1,5 +1,5 @@
 import {z, ZodError} from "zod"
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 
 const bonAchatSchema = z.object({
     id_utilisateur : z.number().int().positive({message:"id_utilisateur doit etre superieur à 0"}),

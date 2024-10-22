@@ -1,5 +1,5 @@
 import { z,ZodError } from "zod";
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 import phoneNumberPattern from "../utils/phone.number.pattern.js";
 // import dateFormat from "../utils/date.format.js";
 

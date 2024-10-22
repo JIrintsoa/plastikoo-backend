@@ -54,10 +54,10 @@ passport.use(new GoogleStrategy({
             }
       
             // return done(null, userProfile);
-          } catch (error) {
-            console.log(error)
-            // return done(null, error);
-          }
+        } catch (error) {
+          console.log(error)
+          // return done(null, error);
+        }
     }
 ))
 

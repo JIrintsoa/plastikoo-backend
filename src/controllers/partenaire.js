@@ -1,5 +1,5 @@
 // import {  z,ZodError } from "zod";
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 
 
 const listePartenaire = async (req,res) => {

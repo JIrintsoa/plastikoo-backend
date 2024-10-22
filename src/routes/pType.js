@@ -1,5 +1,5 @@
 import { Router } from "express";
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 
 const route = Router()
 

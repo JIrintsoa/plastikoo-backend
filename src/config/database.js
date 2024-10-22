@@ -26,10 +26,14 @@ export const mysqlPoolMachine = mysql.createPool({
 
 export const mysqlAchatPlastikoo = mysql.createPool({
     host: process.env.DB_DEV_HOST,
-    user: process.env.DB_DEV_USER_MACHINE,
-    password: process.env.DB_DEV_USER_MACHINE_MDP,
+    user: process.env.DB_DEV_USER,
+    password: process.env.DB_DEV_PASSWORD,
     database: process.env.DB_ACHAT_PLASTIKOO
 })
 
-export default  mysqlPool;
+export default {
+    mysqlPool,
+    mysqlAchatPlastikoo,
+    mysqlPoolMachine
+}
 

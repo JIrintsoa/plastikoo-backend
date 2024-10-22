@@ -32,6 +32,7 @@ import 'dotenv/config'
 
 // import authentication google facebook config
 import './config/auth.google.js'
+import './config/auth.facebook.js'
 
 import cors from "cors"
 
@@ -89,16 +90,16 @@ app.use(passport.session());
 //     return done(null, id);
 // });
 
-passport.use(new facebookStrategy({
-        clientID: process.env.FACEBOOK_CLIENT_ID,
-        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-        callbackURL: 'http://localhost:5000/facebook/auth/callback',
-        profileFields: ['id', 'displayName', 'name', 'gender','email','picture.type(large)']
-    }, function (accessToken, refreshToken, profile, done) {
-        console.log(profile)
-        return done(null, profile);
-    }
-));
+// passport.use(new facebookStrategy({
+//         clientID: process.env.FACEBOOK_CLIENT_ID,
+//         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+//         callbackURL: 'http://localhost:5000/facebook/auth/callback',
+//         profileFields: ['id', 'displayName', 'name', 'gender','email','picture.type(large)']
+//     }, function (accessToken, refreshToken, profile, done) {
+//         console.log(profile)
+//         return done(null, profile);
+//     }
+// ));
 
 app.use((req, res, next) => {
     req.io = io; 

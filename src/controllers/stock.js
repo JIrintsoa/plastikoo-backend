@@ -1,5 +1,5 @@
 import { z,ZodError } from "zod";
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 
 const stockFormSchema = z.object({
     qte_kg_entrant: z.number().nonnegative({message:'Veuillez ajouter un nombre positif'}).default(0),

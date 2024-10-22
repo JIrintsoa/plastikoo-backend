@@ -55,6 +55,8 @@ route.get('/infos',
     UtilisateurController.infos
 )
 
+route.get('/:id_utilisateur', UtilisateurController.getById)
+
 // mot de passe oublie
 
 route.post('/mdp-oublie', UtilisateurController.mdpOublie)

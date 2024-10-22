@@ -1,6 +1,6 @@
 import { z,ZodError } from "zod";
 // import contactService from "../service/contact.js";
-import mysqlPool from "../config/database.js";
+import {mysqlPool} from "../config/database.js";
 
 const contactFormSchema = z.object({
     nom: z.string().min(1, {message: 'Veuillez saisir votre nom'}),

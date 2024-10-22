@@ -1,4 +1,31 @@
-import mysqlPool from "../config/database.js";
+import { z, ZodError } from "zod";
+import {mysqlPool} from "../config/database.js";
+import {mysqlAchatPlastikoo} from "../config/database.js"
+
+
+const ajoutProduitSchema = z.object({
+    designation: z.string().min(1, "Designation is required"),
+    description: z.string().optional(),
+    img: z.string().url("Invalid image URL"),
+    pu: z.number().positive("Price must be a positive number"),
+    id_type_pack: z.number().int().positive("Invalid pack type ID"),
+    id_meuble: z.number().int().positive().optional(),
+    id_electromenager: z.number().int().positive().optional(),
+    id_electricite: z.number().int().positive().optional(),
+    id_eaux: z.number().int().positive().optional(),
+    id_type_produit: z.number().int().positive("Invalid product type ID"),
+    id_modele: z.number().int().positive("Invalid model ID"),
+});
+
+const rechercheProduitSchema = z.object({
+    id_type_pack: z.number().int().positive().nullable().optional(),
+    id_meuble: z.number().int().positive().nullable().optional(),
+    id_electromenager: z.number().int().positive().nullable().optional(),
+    id_electricite: z.number().int().positive().nullable().optional(),
+    id_eaux: z.number().int().positive().nullable().optional(),
+    id_type_produit: z.number().int().positive().nullable().optional(),
+    id_modele: z.number().int().positive().nullable().optional(),
+});
 
 class ProduitController {
 
@@ -238,6 +265,130 @@ class ProduitController {
             }
         });
     }
+
+    static ajoutProduit = (req,res) => {
+        const connection = mysqlPool
+        connection.getConnection((err, conn) => {
+            if (err) {
+                console.error('Erreur lors de l\'obtention de la connexion:', err);
+                return res.status(500).json({ error: 'Erreur de connexion à la base de données' });
+            }
+            try {
+                // Validate request body
+                ajoutProduitSchema.parse(req.body)
+    
+                // Extract validated data in the order of SQL placeholders
+                const {
+                    designation, description, img, pu, id_type_pack, id_meuble,
+                    id_electromenager, id_electricite, id_eaux, id_type_produit, id_modele
+                } = req.body;
+
+                conn.beginTransaction(err => {
+                    if (err) {
+                        conn.release(); // Toujours libérer la connexion
+                        console.error('Erreur lors du démarrage de la transaction:', err);
+                        return res.status(500).json({ error: 'Erreur de transaction' });
+                    }
+
+                    const sql = `INSERT INTO produits
+                    (designation, description, img, pu, id_type_pack, id_meuble, id_electromenager, id_electricite, id_eaux, id_type_produit, id_modele)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+                    conn.query(sql, [
+                        designation, description, img, pu, id_type_pack, id_meuble,
+                        id_electromenager, id_electricite, id_eaux, id_type_produit, id_modele],(err,result)=>{
+                            if (err) {
+                                console.error('Erreur lors de l\'insertion des données:', err);
+                                return conn.rollback(() => {
+                                    conn.release(); // Rollback et libération en cas d'erreur
+                                    res.status(500).json({ error: 'Échec de la création du ticket' });
+                                });
+                            }
+                        const id_produit = result.insertId
+                        conn.commit(err => {
+                            if (err) {
+                                console.error('Erreur lors de la validation de la transaction:', err);
+                                return conn.rollback(() => {
+                                    conn.release(); // Rollback et libération en cas d'erreur
+                                    res.status(500).json({ error: 'Échec de la validation de la transaction' });
+                                });
+                            }
+                            console.log('Produit créé avec succès avec l\'ID:', id_produit);
+                            conn.release(); // Toujours libérer la connexion
+                            return id_produit
+                        })
+                    })
+                })
+    
+            } catch (error) {
+                conn.release(); // Libérer la connexion en cas d'échec de la validation ou d'erreur inattendue
+                if (error instanceof ZodError) {
+                    const validationErrors = error.errors.map(err => err.message).join(', ');
+                    res.status(400).json({ error: `Erreur de validation: ${validationErrors}` });
+                } else {
+                    console.error('Erreur inattendue:', error);
+                    res.status(500).json({ error: 'Erreur interne du serveur' });
+                }
+            }
+        })
+    }
+
+    static rechercheProduit =  (req, res) => {
+        try {
+            // Validate query parameters
+            rechercheProduitSchema.parse(req.body);
+
+            const {
+                id_type_pack, id_meuble, id_electromenager, id_electricite, id_eaux, id_modele
+            } = req.body;
+
+            // SQL query with parameterized inputs
+            const sql = `
+                SELECT
+                    id, designation, description, img, pu, id_type_pack, id_meuble, id_electromenager, id_electricite, id_eaux, id_type_produit, id_modele
+                FROM
+                    produits
+                WHERE
+                    (id_type_pack = ? OR ? IS NULL)
+                    AND (id_meuble = ? OR ? IS NULL)
+                    AND (id_electromenager = ? OR ? IS NULL)
+                    AND (id_electricite = ? OR ? IS NULL)
+                    AND (id_eaux = ? OR ? IS NULL)
+                    AND (id_modele = ? OR ? IS NULL);
+            `;
+
+            mysqlAchatPlastikoo.query(sql, [
+                    id_type_pack, id_type_pack,
+                    id_meuble, id_meuble,
+                    id_electromenager, id_electromenager,
+                    id_electricite, id_electricite,
+                    id_eaux, id_eaux,
+                    id_modele, id_modele
+                ]).then(([rows]) => {
+                    if (rows.length > 0) {
+                        res.json({rows });
+                    } else {
+                        res.json({message: 'Aucun produits' });
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error fetching products:', error);
+                    res.status(500).json({  error:  error.sqlMessage });
+                });
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                // Zod validation error
+                return res.status(400).json({ error: error.errors });
+            } else {
+                // SQL or other server error
+                console.error("Error fetching products:", error);
+                return res.status(500).json({ error: "Internal Server Error" });
+            }
+        }
+    };
+
+    // static
 }
 
 export default ProduitController

@@ -11,7 +11,8 @@ const FACEBOOK_CLIENT_SECRET = process.env.FACEBOOK_CLIENT_SECRET
 passport.use(new FacebookStrategy({
         clientID: FACEBOOK_CLIENT_ID, // Remplace avec ton App ID
         clientSecret: FACEBOOK_CLIENT_SECRET, // Remplace avec ton App Secret
-        callbackURL: `${baseUrlLocal()}/facebook/auth/callback`, // URL de redirection configurée dans Facebook
+        callbackURL: `${baseUrlProd}/facebook/auth/callback`,  // Production URL
+        // callbackURL: `${baseUrlLocal}/facebook/auth/callback`,  // Production URL
         // profileFields: ['id', 'emails', 'displayName', 'name', 'birthday', 'photos'] // Champs que tu veux récupérer (ajoute 'email' si besoin)
         profileFields: ['id', 'emails', 'displayName', 'name', 'photos'] // Champs que tu veux récupérer (ajoute 'email' si besoin)
 

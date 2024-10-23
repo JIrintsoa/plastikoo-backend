@@ -262,7 +262,7 @@ const infos = (req,res) => {
         }
 
         console.log('Utilisateur récupérée avec succès: ', result);
-        return res.status(200).json(result);
+        return res.status(200).json(result[0]);
     });
 }
 

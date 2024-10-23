@@ -65,7 +65,7 @@ app.use(bodyParser.json())
 
 // CORS Middleware Configuration
 const corsOptions = {
-    origin: '*', // Allows all origins, or replace '*' with specific domains for production like "http://example.com"
+    origin: ['http://localhost:3000','http://plastikoo.mg'], 
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"]
 };

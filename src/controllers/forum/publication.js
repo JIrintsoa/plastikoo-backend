@@ -397,11 +397,12 @@ const supprimer = async (req,res) => {
                 res.status(401).json({error:err.message})
             }
             else {
-                console.log(result)
                 if(result.affectedRows == 0){
-                    res.status(200).json({error:"Vous n'avez pas droit à supprimer cette publication"})
+                    res.json({error:"Vous n'avez pas droit à supprimer cette publication"})
                 }
-                res.status(200).json({message:"La publication a été validée"})
+                else{
+                    res.status(200).json({message:"La publication a été validée"})
+                }
             }
         })
     } catch (error) {

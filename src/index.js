@@ -65,7 +65,8 @@ app.use(bodyParser.json())
 
 // CORS Middleware Configuration
 const corsOptions = {
-    origin: ['http://localhost:3000','http://plastikoo.mg'], 
+    origin: ['http://localhost:3000','https://plastikoo.mg'], 
+    // origin: '*', 
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"]
 };

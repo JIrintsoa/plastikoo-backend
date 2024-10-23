@@ -26,6 +26,7 @@ const liste = (req,res) => {
             publication.contenu,
             publication.date_creation,
             publication.lien,
+            utilisateur.id as id_utilisateur,
             utilisateur.nom AS utilisateur_nom,
             utilisateur.prenom AS utilisateur_prenom,
             utilisateur.pseudo_utilisateur AS pseudo_utilisateur,

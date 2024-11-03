@@ -1,5 +1,5 @@
 import { z,ZodError } from "zod"
-import mysqlPoolMachine from "../config/database.js";
+import {mysqlPoolMachine} from "../config/database.js";
 
 const creerTicketSchemas = z.object({
     montant: z.number().nonnegative({message: "Le montant devrait etre superieur a 0"}).default(0),

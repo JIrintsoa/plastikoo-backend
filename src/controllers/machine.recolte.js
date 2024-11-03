@@ -1,5 +1,5 @@
 import { z,ZodError } from "zod";
-import mysqlPoolMachine from "../config/database.js";
+import {mysqlPoolMachine} from "../config/database.js";
 
 const inputValidator = z.object({
     designation: z.string().min(1, { message: "La désignation ne peut pas être vide" }),

@@ -8,15 +8,16 @@ import "dotenv/config"
 
 const {JWT_SECRET,BCRYPT_SALT_ROUNDS, MIN_PASSWORD_LENGTH} = process.env;
 
+
 const minimumPasswordLength = Number(MIN_PASSWORD_LENGTH);
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]+$/;
+const passwordRegex = /^[\S]+$/; // Autorise tout caractère non-espace
 
 const signUpSchema = z.object({
     email: z.string().min(1, "L'email est requis").email("Email invalide"),
     mdp: z.string()
     .min(minimumPasswordLength, `Le mot de passe doit contenir au moins ${minimumPasswordLength} caractères`)
     .max(100, "Le mot de passe est trop long")
-    .regex(passwordRegex, "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, et un chiffre"),
+    .regex(passwordRegex, "Le mot de passe ne doit pas contenir d'espaces"),
     nom: z.string().min(1, "Votre nom est requis"),
     prenom: z.string().min(1, "Votre prénom est requis"),
     date_naissance: z.string()
@@ -25,12 +26,11 @@ const signUpSchema = z.object({
         const today = new Date();
         const minAge = 18;
         const minBirthDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
-        return date <= minBirthDate; // Ensure the birthdate is at least 18 years ago
+        return date <= minBirthDate;
     }, {
         message: "Vous devez avoir au moins 18 ans.",
     })
 });
-
 
 const signInSchema = z.object({
     username: z.string().min(1, "Le nom d'utilisateur est requis").max(50, "Le nom d'utilisateur est trop long"),

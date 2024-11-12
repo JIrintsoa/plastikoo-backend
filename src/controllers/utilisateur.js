@@ -24,8 +24,7 @@ const pseudoSchemas = z.object({
     pseudo: z.string()
     .min(3, "Le pseudo doit comporter au moins 3 caractères.")
     .max(20, "Le pseudo ne peut pas dépasser 20 caractères.")
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]+$/, "Le pseudo doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un underscore.")
-})
+});
 
 const profileSchemas = z.object({
     email: z.string().min(1, "L'email est requis").email("Email invalide"),
@@ -143,16 +142,19 @@ const creePseudo = (req,res) => {
         if(!req.fileUploaded) {
             return res.status(400).json({ error: 'Erreur à la récuperation du nom de fichier' });
         }
-        pseudoSchemas.parse(req.body)
+        // pseudoSchemas.parse(req.body)
 
         const id_utilisateur = req.utilisateur.id_utilisateur
         const {pseudo} = req.body
+        console.log(pseudo)
         const pseudo_img = req.fileUploaded
+        // const typeFile = req.typeFile
 
         const sql = `UPDATE utilisateur SET pseudo_utilisateur = ?, img_profil = ? where id = ?`
         mysqlPool.query(sql,[pseudo,pseudo_img,id_utilisateur],(err,result)=>{
             if (err) {
                 console.error('Erreur d\'ajout pseudo de l\'utilisateur: ', err);
+
                 UploadController.deleteFileLocalUploaded(pseudo_img)
                 res.json({error:err.sqlMessage})
             } else {
@@ -164,7 +166,8 @@ const creePseudo = (req,res) => {
     } catch (error) {
         if (error instanceof ZodError) {
             const validationErrors = error.errors.map(err => err.message).join(', ');
-            if (req.fileUploaded) {
+            console.log(req.fileUploaded)
+            if (req.fileUploaded != 'pseudo-anonyme.png') {
                 UploadController.deleteFileLocalUploaded(req.fileUploaded)
             }
             console.error(error)

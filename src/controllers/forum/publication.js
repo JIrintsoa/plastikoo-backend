@@ -11,7 +11,7 @@ const fc_socket_reaction = process.env.SOCKET_IO_REACTION
 const forumSchemas = z.object({
     titre: z.string().min(1,{message:"Veuillez ajouter un titre"}),
     contenu: z.string().min(1,{message:"Veuillez ajouter du contenu"}),
-    img: z.string().min(1, {message:"L'image est vide"}),
+    img: z.string().nullable(),
     id_utilisateur: z.number().int().positive({message:"id_utilisateur doit etre superieur a 0"}),
 });
 
@@ -298,9 +298,10 @@ const listSousCommentaire =  (req,res) => {
 // ajouter publication
 const publier = async(req,res) => {
     try {
-        if(!req.fileUploaded) {
-            return res.status(400).json({ error: 'Erreur à la récuperation du nom de fichier' });
-        }
+        // console.log(req.fileUploaded)
+        // if(!req.fileUploaded) {
+        //     return res.status(400).json({ error: 'Erreur à la récuperation du nom de fichier' });
+        // }
         const form = forumSchemas.parse({
             titre: req.body.titre,
             contenu: req.body.contenu,

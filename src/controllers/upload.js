@@ -35,17 +35,16 @@ class UploadController {
             const upload = uploadUtils.getUploadMiddleware(typeFieldName);
             upload.single(typeFieldName)(req, res, (err) => {
                 if (err) {
-                    if (err.code === 'LIMIT_FILE_SIZE') {
-                        return res.status(413).json({ error: `La taille du fichier dépasse la limite de ${MBsize} Mo.` });
-                    } else if (err.code === 'INVALID_FILE_FORMAT') {
-                        return res.status(400).json({ error: err.message });
-                    } else {
-                        return res.status(500).json({ error: 'Une erreur inattendue s\'est produite lors du téléchargement du fichier.' });
-                    }
+                    const errorMessages = {
+                        'LIMIT_FILE_SIZE': `La taille du fichier dépasse la limite de ${MBsize} Mo.`,
+                        'INVALID_FILE_FORMAT': err.message
+                    };
+                    return res.status(err.code === 'LIMIT_FILE_SIZE' || err.code === 'INVALID_FILE_FORMAT' ? 400 : 500).json({ error: errorMessages[err.code] || 'Une erreur inattendue s\'est produite lors du téléchargement du fichier.' });
                 }
-    
+                
+                // Skip error if `typeFieldName` is "forum" and no file uploaded    
                 // Si aucun fichier n'a été téléchargé
-                if (!req.file) {
+                if (!req.file && typeFieldName === "forum") {
                     console.log(req.file)
                     // Vérifier si typeFieldName est 'pseudo'=
                     if (typeFieldName === 'pseudo') {
@@ -54,12 +53,15 @@ class UploadController {
                         req.fileType = 'pseudo'
                         return next(); // Continuer sans retourner d'erreur
                     }
-                    return res.status(400).json({ error: 'Aucun fichier n\'a été téléchargé.' });
+                    req.fileUploaded = null;
+                    return next();
                 }
-    
+                
+                // Return error if no file is uploaded for other types
+                if (!req.file) return res.status(400).json({ error: 'Aucun fichier n\'a été téléchargé.' });
+        
                 // Si un fichier a été téléchargé, récupérer le nom du fichier
-                const fileName = req.file.filename;
-                req.fileUploaded = fileName;
+                req.fileUploaded = req.file.filename;
                 next();
             });
         };

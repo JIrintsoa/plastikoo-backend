@@ -18,7 +18,8 @@ const authentification = async (req,res,next) => {
 }
 
 async function generateToken(arg){
-    return jwt.sign({...arg},JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+    // return jwt.sign({...arg},JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+    return jwt.sign({...arg},JWT_SECRET)
 }
 
 export default {

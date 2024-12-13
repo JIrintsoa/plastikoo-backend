@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email de Contact</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #0073e6;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            color: #fff;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            background-color: #0073e6;
+            padding: 10px;
+            border-radius: 0 0 10px 10px;
+            text-align: center;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Contact</h1>
+        </div>
+        <div class="content">
+            <p><strong>Nom :</strong> {{nom}}</p>
+            <p><strong>Prénom :</strong> {{prenom}}</p>
+            <p><strong>Email :</strong> {{email}}]</p>
+            <p><strong>Raison de contact :</strong> {{type_contact}}</p>
+            <p><strong>Message :</strong> {{message}}</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 www.plastikoo.mg . Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

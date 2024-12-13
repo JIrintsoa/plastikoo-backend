@@ -1,6 +1,7 @@
 import { z,ZodError } from "zod";
 // import contactService from "../service/contact.js";
 import {mysqlPool} from "../config/database.js";
+import mailing from "../utils/mailing.js"
 
 const contactFormSchema = z.object({
     nom: z.string().min(1, {message: 'Veuillez saisir votre nom'}),
@@ -8,6 +9,10 @@ const contactFormSchema = z.object({
     email: z.string().email(),
     id_type_contact: z.number(),
     message: z.string().min(1,{message: 'Veuillez fournir un message'}),
+    type_contact: z.object({
+        id: z.int(),
+        intitule: z.string()
+    })
 })
 
 async function handleContactForm (req, res) {
@@ -17,11 +22,13 @@ async function handleContactForm (req, res) {
             prenom:req.body.prenom,
             email:req.body.email,
             id_type_contact:req.body.id_type_contact,
-            message:req.body.message
+            message:req.body.message,
+            type_contact: req.body.type_contact
         })
         const { nom, prenom, email, id_type_contact, message } = form;
-        const sql = `INSERT INTO contact_forms (nom, prenom, email, id_type_contact, message) VALUES (?,?,?,?,?)`;
 
+        const sql = `INSERT INTO contact_forms (nom, prenom, email, id_type_contact, message) VALUES (?,?,?,?,?)`;
+        mailing.sendFormContact(form)
         mysqlPool.query(sql,[nom, prenom, email, id_type_contact, message],(err,result)=>{
             if (err) {
                 console.error('Erreur insertion de donnee:', err);

@@ -5,8 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email de Contact</title>
     <style>
+        @font-face {
+            font-family: 'Montserrat';
+            src: url('../utils/fonts/Montserrat-Black.ttf') format('ttf');
+            font-weight: 900;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Montserrat';
+            src: url('../utils/fonts/Montserrat-SemiBold.ttf') format('ttf');
+            font-weight: 600;
+            font-style: normal;
+        }
         body {
-            font-family: Arial, sans-serif;
+            /* font-family: 'Montserrat';
+            font-weight: 600; */
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
@@ -20,20 +33,23 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background-color: #0073e6;
+            background-color: #00D45F;
             padding: 20px;
             border-radius: 10px 10px 0 0;
             text-align: center;
             color: #fff;
         }
         .header h1 {
+            font-family: 'Montserrat';
+            font-weight: 900;
+            font-size: 40px;
             margin: 0;
         }
         .content {
             padding: 20px;
         }
         .footer {
-            background-color: #0073e6;
+            background-color: #00D45F;
             padding: 10px;
             border-radius: 0 0 10px 10px;
             text-align: center;
@@ -49,7 +65,7 @@
         <div class="content">
             <p><strong>Nom :</strong> {{nom}}</p>
             <p><strong>Prénom :</strong> {{prenom}}</p>
-            <p><strong>Email :</strong> {{email}}]</p>
+            <p><strong>Email :</strong> {{email}}</p>
             <p><strong>Raison de contact :</strong> {{type_contact}}</p>
             <p><strong>Message :</strong> {{message}}</p>
         </div>

@@ -7,12 +7,8 @@ const contactFormSchema = z.object({
     nom: z.string().min(1, {message: 'Veuillez saisir votre nom'}),
     prenom: z.string().min(1, {message: 'Veuillez saisir votre prénom'}),
     email: z.string().email(),
-    id_type_contact: z.number(),
     message: z.string().min(1,{message: 'Veuillez fournir un message'}),
-    type_contact: z.object({
-        id: z.int(),
-        intitule: z.string()
-    })
+    type_contact: z.string().min(1, {message: 'Veuillez ajouter une raison de contact'})
 })
 
 async function handleContactForm (req, res) {
@@ -21,15 +17,15 @@ async function handleContactForm (req, res) {
             nom:req.body.nom,
             prenom:req.body.prenom,
             email:req.body.email,
-            id_type_contact:req.body.id_type_contact,
             message:req.body.message,
             type_contact: req.body.type_contact
         })
-        const { nom, prenom, email, id_type_contact, message } = form;
+        console.log(form)
+        const { nom, prenom, email, type_contact, message } = form;
 
-        const sql = `INSERT INTO contact_forms (nom, prenom, email, id_type_contact, message) VALUES (?,?,?,?,?)`;
+        const sql = `INSERT INTO contact_forms (nom, prenom, email, raison, message) VALUES (?,?,?,?,?)`;
         mailing.sendFormContact(form)
-        mysqlPool.query(sql,[nom, prenom, email, id_type_contact, message],(err,result)=>{
+        mysqlPool.query(sql,[nom, prenom, email, type_contact, message],(err,result)=>{
             if (err) {
                 console.error('Erreur insertion de donnee:', err);
                 res.json({error:err.message})

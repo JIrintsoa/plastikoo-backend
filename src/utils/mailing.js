@@ -146,7 +146,7 @@ const sendFormContact = async (formContact, callback) =>{
     });
 
     // Read the HTML template
-    const emailTemplatePath = path.join(__dirname, '../templates', 'devisTemplate.html');
+    const emailTemplatePath = path.join(__dirname, '../templates', 'contactForm.html');
     const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf8');
 
     // Get the image directory path from the .env file
@@ -163,14 +163,14 @@ const sendFormContact = async (formContact, callback) =>{
     .replace('{{nom}}', nom)
     .replace('{{prenom}}', prenom)
     .replace('{{email}}', email)
-    .replace('{{type_contact}}', type_contact.intitule)
+    .replace('{{type_contact}}', type_contact)
     .replace('{{message}}', message)
     // .replace('{{signature}}', `data:image/png;base64,${signatureBase64}`);
 
     const mailOptions = {
       to: "akory@plastikoo.mg",
-      subject,
-      text,
+      subject: "Nouveau Contact",
+      text: "Voici les information du nouveau contact:",
       html: htmlContent,
     };
 

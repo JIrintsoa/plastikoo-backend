@@ -145,13 +145,13 @@ const creePseudo = (req,res) => {
         // pseudoSchemas.parse(req.body)
 
         const id_utilisateur = req.utilisateur.id_utilisateur
-        const {pseudo} = req.body
-        console.log(pseudo)
+        const {pseudo_name} = req.body
+        console.log(pseudo_name)
         const pseudo_img = req.fileUploaded
         // const typeFile = req.typeFile
 
         const sql = `UPDATE utilisateur SET pseudo_utilisateur = ?, img_profil = ? where id = ?`
-        mysqlPool.query(sql,[pseudo,pseudo_img,id_utilisateur],(err,result)=>{
+        mysqlPool.query(sql,[pseudo_name,pseudo_img,id_utilisateur],(err,result)=>{
             if (err) {
                 console.error('Erreur d\'ajout pseudo de l\'utilisateur: ', err);
 

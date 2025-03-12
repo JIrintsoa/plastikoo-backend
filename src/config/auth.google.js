@@ -6,8 +6,8 @@ import 'dotenv/config'
 
 const GoogleStrategy = googleAuth.Strategy
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
+// const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+// const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 
 // passport.use(new GoogleStrategy({
 //         clientID: GOOGLE_CLIENT_ID,

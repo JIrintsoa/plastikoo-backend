@@ -34,7 +34,7 @@ const signUpSchema = z.object({
 
 const signInSchema = z.object({
     username: z.string().min(1, "Le nom d'utilisateur est requis").max(50, "Le nom d'utilisateur est trop long"),
-    password: z.string().min(1, "Le nom d'utilisateur est requis")
+    password: z.string().min(1, "Le mot de passe est requis")
 });
 
 // console.log(BCRYPT_SALT_ROUNDS)
@@ -144,6 +144,8 @@ class AuthenticationController {
 
             // Values for the query
             const values = [username, username];
+
+            console.log(values)
 
             // Query the database
             mysqlPool.query(sql, values, async (err, results) => {
@@ -346,7 +348,8 @@ class AuthenticationController {
                     // console.log(results[0].role_exist)
                     if (results[0].role_exist > 0) {
                         // User has the required role, proceed to the next middleware
-                        req.utilisateur = decodedToken;  // Attach user info to request for further use
+                        req.utilisateur = decodedToken;
+                        // console.log(req.utilisateur)  // Attach user info to request for further use
                         next();
                     } else {
                         // User does not have the required role

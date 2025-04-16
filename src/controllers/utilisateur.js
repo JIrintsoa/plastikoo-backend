@@ -1,11 +1,15 @@
 import { z,ZodError } from "zod"
 import {mysqlPool} from "../config/database.js"
+import bcrypt from "bcrypt";
 
 import 'dotenv/config'
 import UploadController from "./upload.js"
 import DateFormat from "../utils/date.format.js";
 import mailing from "../utils/mailing.js";
 import JwtUtils from "../utils/jwt.js"
+
+const {BCRYPT_SALT_ROUNDS} = process.env;
+
 
 const PINSchemas = z.object({
     id_utilisateur: z.number().int().positive({message:"l'id_utilisateur doit etre positive"}),
@@ -20,11 +24,12 @@ const verifieSoldeSchemas = z.object({
     montant: z.number().int().multipleOf(0.01).positive({message:"Solde doit etre superieur à 0"}),
 })
 
-const pseudoSchemas = z.object({
-    pseudo: z.string()
-    .min(3, "Le pseudo doit comporter au moins 3 caractères.")
-    .max(20, "Le pseudo ne peut pas dépasser 20 caractères.")
-});
+
+// const pseudoSchemas = z.object({
+//     pseudo: z.string()
+//     .min(3, "Le pseudo doit comporter au moins 3 caractères.")
+//     .max(20, "Le pseudo ne peut pas dépasser 20 caractères.")
+// });
 
 const profileSchemas = z.object({
     email: z.string().min(1, "L'email est requis").email("Email invalide"),
@@ -42,6 +47,15 @@ const profileSchemas = z.object({
         message: "Vous devez avoir au moins 18 ans.",
     })
 });
+
+const newMdpSchemas = z.object({
+    new_password: z.string().min(1, "Saisissez le nouveau mot de passe")
+})
+
+const currentMdpSchemas = z.object({
+    current_password: z.string().min(1, "Saisissez votre mot de passe"),
+
+})
 
 const verifierSolde = ({id_user, somme},res) => {
     let isVerify = 0
@@ -146,8 +160,9 @@ const creePseudo = (req,res) => {
 
         const id_utilisateur = req.utilisateur.id_utilisateur
         const {pseudo_name} = req.body
-        console.log(pseudo_name)
+        console.log(pseudo_name) 
         const pseudo_img = req.fileUploaded
+        console.log(pseudo_img)
         // const typeFile = req.typeFile
 
         const sql = `UPDATE utilisateur SET pseudo_utilisateur = ?, img_profil = ? where id = ?`
@@ -206,7 +221,7 @@ const modifierProfile = (req,res) => {
     const userId = req.utilisateur.id_utilisateur;
     profileSchemas.parse(req.body)
 
-    const { nom, prenom,email, date_naissance } = req.body;
+    const { nom, prenom,email, date_naissance, pseudo } = req.body;
 
     // Create dynamic SQL query based on provided fields
     let updateFields = [];
@@ -214,6 +229,8 @@ const modifierProfile = (req,res) => {
     if (prenom) updateFields.push(`prenom = '${prenom}'`);
     if (email) updateFields.push(`email = '${email}'`);
     if (date_naissance) updateFields.push(`date_naissance = '${date_naissance}'`);
+    if (pseudo) updateFields.push(`pseudo_utilisateur = '${pseudo}'`);
+
 
     if (updateFields.length === 0) {
         return res.status(400).send('Aucun champs à modifier');
@@ -227,7 +244,7 @@ const modifierProfile = (req,res) => {
             console.error('Error updating user:', err);
             return res.status(500).send('Internal server error');
         }
-
+ 
         if (result.affectedRows === 0) {
             return res.status(404).send('Utilisateur non trouvé');
         }
@@ -326,6 +343,7 @@ const mdpOublie = (req, res) => {
     });
 }
 
+
 const verifierCodeMdpOublie = (req, res) => {
     const { email } = req.params;
     const { code } = req.body;
@@ -400,6 +418,96 @@ const getById = (req,res) => {
 }
 
 
+const changeMdp = (req,res) => {
+
+    try {
+        const userId = req.utilisateur.id_utilisateur;
+        newMdpSchemas.parse(req.body)
+    
+        const {new_password } = req.body;
+
+        const query = `UPDATE utilisateur SET mot_de_passe = ? WHERE id = ?`;
+
+        const salt = bcrypt.genSaltSync(Number(BCRYPT_SALT_ROUNDS));
+        const hashMdp = bcrypt.hashSync(new_password, salt);
+
+        mysqlPool.query(query, [hashMdp,userId], (err, result) => {
+            if (err) {
+                console.error('Error updating password:\n', err);
+                return res.status(500).send('Internal server error');
+            }
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).send('Utilisateur non trouvé');
+            }
+
+            res.json({message:'Mise à jour du mot de passe réussie'});
+        });
+
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const validationErrors = error.errors.map(err => err.message).join(', ');
+            console.error(error)
+            res.status(400).json({ error: validationErrors });
+        } else {
+            console.error(error); // Log the unexpected error for debugging
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+}
+
+const verifierMdp = (req, res, next) => {
+    try {
+        const userId = req.utilisateur.id_utilisateur; // Assurez-vous que req.utilisateur est correctement défini par votre middleware d'authentification
+
+        // Validation avec Zod (similaire à votre code existant)
+        const validationResult = currentMdpSchemas.safeParse(req.body); // Utilisez safeParse pour gérer les erreurs de validation sans lancer d'exception
+        if (!validationResult.success) {
+            const validationErrors = validationResult.error.errors.map(err => err.message).join(', ');
+            return res.status(400).json({ error: validationErrors }); // Retournez les erreurs de validation
+        }
+
+        const { current_password } = req.body; // Récupérez current_password depuis le corps de la requête
+        const salt = bcrypt.genSaltSync(Number(BCRYPT_SALT_ROUNDS));
+        const hashMdp = bcrypt.hashSync(current_password, salt);
+
+        const query = `SELECT mot_de_passe FROM utilisateur WHERE id = ?`;
+        // console.log(hashMdp)
+
+        mysqlPool.query(query, [userId], (err, result) => {
+            if (err) {
+                console.error('Erreur lors de la vérification du mot de passe :\n', err);
+                return res.status(500).json({ error: 'Erreur serveur interne' });
+            }
+
+            if (result.length === 0) { // Vérifiez si des lignes ont été retournées
+                return res.status(404).json({error: 'Utilisateur non trouvé'}); // Code 401 pour "Non autorisé"
+            }
+            const hashedPasswordFromDb = result[0].mot_de_passe;
+            // Comparaison du mot de passe saisi avec le mot de passe crypté en utilisant bcrypt.compareSync
+            const passwordMatch = bcrypt.compareSync(current_password, hashedPasswordFromDb);
+
+            if (passwordMatch) {
+                next()
+            } else {
+                return res.status(401).json({error:'Mot de passe incorrect'});
+            }
+
+        });
+
+    } catch (error) {
+        // Gestion des erreurs (similaire à votre code existant)
+        console.error(error);
+        res.status(500).json({ error: 'Erreur serveur interne' });
+    }
+};
+
+const changePhotoProfil = (req,res) => {
+    
+}
+
+
+
 export default {
     creeCodePIN,
     verifierCodePIN,
@@ -411,4 +519,7 @@ export default {
     modifierProfile,
     mdpOublie,
     verifierCodeMdpOublie,
+    verifierMdp,
+    changeMdp,
+    changePhotoProfil
 }

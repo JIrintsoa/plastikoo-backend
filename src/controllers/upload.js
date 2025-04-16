@@ -24,10 +24,13 @@ class UploadController {
                 }
                     // Vérifier si typeFieldName est 'pseudo'=
                 else if (typeFieldName === 'pseudo') {
-                    console.log('tafiditra ato')
-                    req.fileUploaded = 'pseudo-anonyme.png'; // Attribuer une image par défaut
-                    req.fileType = 'pseudo'
-                    return next(); // Continuer sans retourner d'erreur
+                    if(!req.file){
+                        // console.log(req.file)
+                        console.log('tafiditra ato')
+                        req.fileUploaded = 'pseudo-anonyme.png'; // Attribuer une image par défaut
+                        req.fileType = 'pseudo'
+                        return next(); // Continuer sans retourner d'erreur
+                    }
                 }
                 else {
                     // Si un fichier a été téléchargé, récupérer le nom du fichier
